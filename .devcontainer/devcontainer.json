@@ -14,5 +14,5 @@
     }
   },
   "postCreateCommand": "npx --yes pnpm@11.25.0 install --frozen-lockfile",
-  "postStartCommand": "bash .devcontainer/start.sh"
+  "postAttachCommand": "bash .devcontainer/start.sh"
 }
