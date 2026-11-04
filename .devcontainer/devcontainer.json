@@ -1,0 +1,18 @@
+{
+  "name": "SmileSync CRM",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+  "forwardPorts": [4173],
+  "portsAttributes": {
+    "4173": {
+      "label": "SmileSync CRM",
+      "onAutoForward": "openBrowser",
+      "visibility": "private"
+    },
+    "3001": {
+      "onAutoForward": "ignore",
+      "visibility": "private"
+    }
+  },
+  "postCreateCommand": "npx --yes pnpm@11.25.0 install --frozen-lockfile",
+  "postStartCommand": "bash .devcontainer/start.sh"
+}
