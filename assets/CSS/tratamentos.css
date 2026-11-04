@@ -1,0 +1,164 @@
+
+*{
+    font-family: var(--ff-Roboto-Flex)
+}
+
+.title{
+    color: var(--text-label);
+}
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+
+}
+.flex{
+    display: flex;
+    justify-content: space-between;
+}
+.coluna{
+    flex-direction: column;
+}
+.conteiner{
+    width: 100%;
+
+
+
+    & div{
+        & label{
+            color: var(--text-label);
+        }
+    }
+}
+
+.buscaP{
+    margin-right: 90px;
+}
+.input{
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+
+}
+input.input{
+    width: 37.5rem;
+}
+
+
+.border-round{
+    border-radius: 20px;
+}
+.table-responsive{
+
+    
+    overflow: hidden;
+    border-radius: 20px;
+    border: solid 2px var(--border);
+    width: 100%;
+    border-spacing: 0px;
+
+    & th {
+            color: #596A64;
+            background-color: #F0F3F3;
+            padding: 0.75rem 1rem;
+            border-bottom: solid 2px var(--border);
+            font-weight: 600;
+        }
+
+        & td {
+            padding: 0.75rem 1rem;
+            border-bottom: solid 2px var(--border);
+            vertical-align: middle;
+        }
+    
+
+
+}
+
+
+thead{  
+    background-color: var(--background-primary);
+}
+tbody{
+    background-color: white;
+}
+
+/*
+th {
+    text-align: left;
+    padding: 5px 0px 5px;
+    padding-left: 10px;
+}
+td{
+    padding-left: 10px;
+}
+
+
+
+.red-card{
+    background-color: rgba(255,0,0,0.5);
+    border-radius: 15px;
+    overflow: hidden;
+}
+.red-dot{
+    border-radius: 15px;
+    background-color: red;
+    width:
+}
+*/
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge--success {
+    background-color: #DCFCE7;
+    color: #166534;
+}
+
+.status-badge--warning {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.status-badge--danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.status-badge--neutral {
+    background-color: #F1F5F9;
+}
+
+.etapas-texto {
+    display: block;
+    font-size: 9px;
+    color: #374151;
+    margin-bottom: 5px;
+}
+
+.barra-etapas {
+    display: grid;
+    grid-template-columns: repeat(5,20px);
+    gap: 3px;
+}
+
+.etapa {
+    width: 20px;
+    height: 4px;
+    border-radius: 3px;
+    background-color: #dce5e5;
+}
+
+.etapa.concluida {
+    background-color: #247b72;
+}
+

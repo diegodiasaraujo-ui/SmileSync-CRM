@@ -1,0 +1,48 @@
+*{
+    font-family: var(--ff-Roboto-Flex)
+}
+
+.title{
+    color: var(--text-label);
+}
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+
+}
+.flex{
+    display: flex;
+    justify-content: space-between;
+}
+.coluna{
+    flex-direction: column;
+}
+.conteiner{
+    width: 100%;
+
+
+
+    & div{
+        & label{
+            color: var(--text-label);
+        }
+    }
+}
+
+.buscaP{
+    margin-right: 90px;
+}
+.input{
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+
+}
+
+.quina-inferior{
+    margin-top: auto;
+}

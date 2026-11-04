@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto+Mono:ital,wght@0,700;1,700&family=Sora:wght@100..800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/CSS/global.css">
+    <link rel="stylesheet" href="assets/CSS/tratamentos.css">
+
+    <title>Tratamentos</title>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div>
+                <img src="assets/icons/logo.svg" alt="Logo so SmileSync">
+                <h2>Smile<span>Sync</span></h2>
+            </div>
+
+            <nav>
+                 <ul>
+                    <h5>Operação</h5>
+
+                    <li>
+                        <a href="dashboard.html" class="nav-link">
+                            <img src="assets/icons/dash.svg" alt="Ícone Dashboard">
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="pacientes.html" class="nav-link">
+                            <img src="assets/icons/pacientes.svg" alt="Ícone Pacientes">
+                            <span>Pacientes</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="agenda.html" class="nav-link">
+                            <img src="assets/icons/calender.svg" alt="Ícone Agenda">
+                            <span>Agenda</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tratamentos.html" class="nav-link active">
+                            <img src="assets/icons/tratamentos.svg" alt="Ícone tratamentos">
+                            <span>Tratamentos</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="orcamentos.html" class="nav-link">
+                            <img src="assets/icons/orcamentos.svg" alt="Ícone Orçamentos">
+                            <span>Orçamentos</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="financeiro.html" class="nav-link">
+                            <img src="assets/icons/financeiro.svg" alt="Ícone Financeiro">
+                            <span>Financeiro</span>
+                        </a>
+                    </li>
+
+                    <h5>Gestão</h5>
+
+                    <li>
+                        <a href="configuracoes.html" class="nav-link">
+                            <img src="assets/icons/settings.svg" alt="Ícone Configurações">
+                            <span>Configurações</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+
+            <div class="tituloHeader flex conteiner">                                 
+
+                <div>
+                    <h3 class="title">Tratamentos</h3>
+                </div>                                                                         
+                <div>
+                    <button class="btn-card"><img src="/assets/icons/plusIcon.svg"> Novo Orçamento</button>
+                </div>
+                      
+                                       
+            </div>
+            <div class="flex conteiner">
+                <div  class="flex coluna">
+                    <label>Buscar tratamento ou paciente</label>
+                    <input class="input" type="text" id="pesquisaTratamentos" placeholder="Procedimento ou Nome">
+                </div>
+                <div  class="flex coluna">
+                    <label>Profissional</label>
+                    <select class="input">
+                        <option>Dr. Sidney Almeida</option>
+                        <option>Dra. Beatriz Moreira</option>                     
+                    </select>
+                </div>
+                <div  class="flex coluna">
+                    <label>Status</label>
+                    <select class="input">
+                        <option>Todos</option>
+                        <option>Em andramento</option>
+                        <option>Pausado</option>
+                        <option>Aguardando retorno</option>
+                        <option>Cancelado</option>
+                    </select>
+                </div>
+            </div>
+
+            
+
+            <div style="margin-top: 15px;" class="conteiner ">               
+                <table class="table-responsive">
+                    <thead>
+                        <tr>
+                        <th>Paciente/tratametno</th>
+                        <th>Profissional</th>
+                        <th>Contratado/pago</th>
+                        <th>Em aberto</th>
+                        <th>Etapas</th>
+                        <th>Próxima etapa</th>
+                        <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <p>Implante dentario</p>
+                                <p>Mariana Oliveira</p>
+                            </td>
+                            <td>
+                                <p>Dr. Sidney Almeida</p>
+                                <div>
+                                    <p class="status-badge status-badge--danger"> ● Alta Prioridade</p>
+                                </div>
+                            </td>
+                            <td>
+                                <p>8.500</p>
+                                <p>2.000 pagos</p>
+                            </td>
+                            <td>
+                                <p>6.100</p>
+                            </td>
+                            <td>
+                                
+                                <p>4 de 7 etapas</p>
+                                <div class="barra-etapas">
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa"></span>
+                                    <span class="etapa"></span>
+                                    <span class="etapa"></span>
+                                </div>
+                            
+                            </td>
+                            <td>
+                                <p>Retorno pós procedimento</p>
+                                <p>16 set</p>
+                            </td>
+                            <td>
+                                <p class="status-badge status-badge--success">Em Andamento</p>
+                            </td>
+                            
+                        </tr>
+                        <tr>
+                            <td>
+                                <p>Implante dentario</p>
+                                <p>Mariana Oliveira</p>
+                            </td>
+                            <td>
+                                <p>Dr. Sidney Almeida</p>
+                                <div>
+                                    <p class="status-badge status-badge--danger"> ● Alta Prioridade</p>
+                                </div>
+                            </td>
+                            <td>
+                                <p>8.500</p>
+                                <p>2.000 pagos</p>
+                            </td>
+                            <td>
+                                <p>6.100</p>
+                            </td>
+                            <td>
+                                <p>4 de 7 etapas</p>
+                                <div class="barra-etapas">
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa concluida"></span>
+                                    <span class="etapa"></span>
+                                    <span class="etapa"></span>
+                                    <span class="etapa"></span>
+                                </div>
+                            </td>
+                            <td>
+                                <p>Retorno pós procedimento</p>
+                                <p>16 set</p>
+                            </td>
+                            <td>
+                                <p class="status-badge status-badge--success">Em Andamento</p>
+                            </td>
+                            
+                        </tr>
+                    </tbody>
+                </table>
+                
+            </div>
+            
+        </main>
+    </div>
+
+</body>
+
+</html>

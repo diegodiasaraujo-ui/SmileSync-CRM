@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto+Mono:ital,wght@0,700;1,700&family=Sora:wght@100..800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/CSS/pacientes.css">
+    <title>Pacientes</title>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div>
+                <img src="assets/icons/logo.svg" alt="Logo so SmileSync">
+                <h2>Smile<span>Sync</span></h2>
+            </div>
+
+            <nav>
+                <ul>
+                    <h5>Operação</h5>
+
+                    <li>
+                        <a href="dashboard.html" class="nav-link">
+                            <img src="assets/icons/dash.svg" alt="Ícone Dashboard">
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="pacientes.html" class="nav-link active">
+                            <img src="assets/icons/pacientes.svg" alt="Ícone Pacientes">
+                            <span>Pacientes</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="agenda.html" class="nav-link">
+                            <img src="assets/icons/calender.svg" alt="Ícone Agenda">
+                            <span>Agenda</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tratamentos.html" class="nav-link">
+                            <img src="assets/icons/tratamentos.svg" alt="Ícone tratamentos">
+                            <span>Tratamentos</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="orcamentos.html" class="nav-link">
+                            <img src="assets/icons/orcamentos.svg" alt="Ícone Orçamentos">
+                            <span>Orçamentos</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="financeiro.html" class="nav-link">
+                            <img src="assets/icons/financeiro.svg" alt="Ícone Financeiro">
+                            <span>Financeiro</span>
+                        </a>
+                    </li>
+
+                    <h5>Gestão</h5>
+
+                    <li>
+                        <a href="configuracoes.html" class="nav-link">
+                            <img src="assets/icons/settings.svg" alt="Ícone Configurações">
+                            <span>Configurações</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <div class="page-header-info">
+                    <h1 class="dashboard-title">Pacientes</h1>
+                </div>
+                
+                <a href="#" class="btn-primary">+ Novo paciente</a>
+            </header>
+
+            <section class="patients-section">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr class="table-color"></th>
+                                <th></th>
+                                <th>Paciente</th>
+                                <th>Próxima consulta</th>
+                                <th>Tratamento</th>
+                                <th>Valor contratado</th>
+                                <th>Valor pago</th>
+                                <th>Valor em aberto</th>
+                                <th>Status financeiro</th>
+                                <th>Status do tratamento</th>
+                            
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td><input type="checkbox" aria-label="Selecionar Mariana Oliveira"></td>
+                                <td>
+                                    <div class="patient-cell">
+                                        <span class="avatar">MO</span>
+                                        <div>
+                                            <strong>Mariana Oliveira</strong>
+                                            <span>(34) 99182-4301</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="inf">16 set - 09:00</td>
+                                <td class="inf">Implante dentário</td>
+                                <td class="inf">R$ 8.500</td>
+                                <td class="inf">R$ 2.400</td>
+                                <td class="inf">R$ 6.100</td>
+                                <td><span class="status-badge status-badge--warning">Parcialmente pago</span></td>
+                                <td><span class="status-badge status-badge--success">Em andamento</span></td>
+                            </tr>
+
+                            <tr>
+                                <td><input type="checkbox" aria-label="Selecionar Carlos Henrique"></td>
+                                <td>
+                                    <div class="patient-cell">
+                                        <span class="avatar">CH</span>
+                                        <div>
+                                            <strong>Carlos Henrique</strong>
+                                            <span>(34) 99871-2640</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="inf">16 set - 10:30</td>
+                                <td class="inf">Ortodontia</td>
+                                <td class="inf">R$ 6.200</td>
+                                <td class="inf">R$ 0</td>
+                                <td class="inf">R$ 6.200</td>
+                                <td><span class="status-badge status-badge--danger">Vencido</span></td>
+                                <td><span class="status-badge status-badge--neutral">Aguardando...</span></td>
+                            </tr>
+
+                            <tr>
+                                <td><input type="checkbox" aria-label="Selecionar Ana Beatriz Souza"></td>
+                                <td>
+                                    <div class="patient-cell">
+                                        <span class="avatar">AB</span>
+                                        <div>
+                                            <strong>Ana Beatriz Souza</strong>
+                                            <span>(34) 99921-7634</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="inf">16 set - 12:00</td>
+                                <td class="inf">Sem tratamento</td>
+                                <td class="inf">R$ 0</td>
+                                <td class="inf">R$ 0</td>
+                                <td class="inf">R$ 0</td>
+                                <td><span class="status-badge status-badge--neutral">Sem cobrança</span></td>
+                                <td><span class="status-badge status-badge--neutral">Sem tratamento</span></td>
+                            </tr>
+
+                            <tr>
+                                <td><input type="checkbox" aria-label="Selecionar Fernanda Alves"></td>
+                                <td>
+                                    <div class="patient-cell">
+                                        <span class="avatar">FA</span>
+                                        <div>
+                                            <strong>Fernanda Alves</strong>
+                                            <span>(34) 99114-6228</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="inf">16 set - 14:00</td>
+                                <td class="inf">Facetas em resina</td>
+                                <td class="inf">R$ 12.800</td>
+                                <td class="inf">R$ 5.120</td>
+                                <td class="inf">R$ 7.680</td>
+                                <td><span class="status-badge status-badge--danger">Vencido</span></td>
+                                <td><span class="status-badge status-badge--success">Em andamento</span></td>
+                            </tr>
+
+                            <tr>
+                                <td><input type="checkbox" aria-label="Selecionar João Pedro Martins"></td>
+                                <td>
+                                    <div class="patient-cell">
+                                        <span class="avatar">JP</span>
+                                        <div>
+                                            <strong>João Pedro Martins</strong>
+                                            <span>(34) 99603-5190</span>                                           
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="inf">18 set - 10:30</td>
+                                <td class="inf">Clareamento</td>
+                                <td class="inf">R$ 1.800</td>
+                                <td class="inf">R$ 900</td>
+                                <td class="inf">R$ 900</td>
+                                <td><span class="status-badge status-badge--warning">Parcialmente pago</span></td>
+                                <td><span class="status-badge status-badge--neutral">Pausado</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+</body>
+
+</html>

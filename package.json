@@ -1,0 +1,19 @@
+{
+  "name": "smilesync",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "start": "pnpm dev",
+    "dev": "pnpm --parallel --filter @smilesync/api --filter @smilesync/web dev",
+    "build": "pnpm --filter @smilesync/api build && pnpm --filter @smilesync/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "pnpm -r format",
+    "format:check": "pnpm -r format:check",
+    "validate": "pnpm format:check && pnpm typecheck && pnpm test && pnpm build"
+  }
+}

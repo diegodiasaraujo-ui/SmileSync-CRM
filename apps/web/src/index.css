@@ -1,0 +1,95 @@
+@import "./styles/fonts.css";
+@import "tailwindcss";
+@import "./styles/theme.css";
+
+@layer base {
+  body {
+    min-width: 320px;
+    font-family: "Inter", sans-serif;
+    color: var(--foreground);
+    background: var(--background);
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button,
+  a,
+  select,
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+  input[type="checkbox"] {
+    accent-color: var(--primary);
+  }
+  ::selection {
+    background: #d5e9e0;
+    color: #174a42;
+  }
+  dialog {
+    border: 0;
+  }
+  kbd {
+    font-family: inherit;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media print {
+  body:has(dialog[open]) #root {
+    display: none;
+  }
+  dialog[open] {
+    visibility: visible;
+    position: absolute !important;
+    inset: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  dialog[open]::backdrop {
+    background: transparent;
+  }
+  dialog[open] > div:first-child {
+    display: none;
+  }
+  dialog[open] > div:last-child {
+    overflow: visible !important;
+  }
+  .print-report {
+    overflow: visible;
+    font-size: 11px;
+  }
+  .print-report table {
+    white-space: normal;
+    font-size: 10px;
+  }
+  .print-report th,
+  .print-report td {
+    padding: 6px;
+  }
+}

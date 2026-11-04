@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Roboto+Mono:ital,wght@0,700;1,700&family=Sora:wght@100..800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div>
+                <img src="assets/icons/logo.svg" alt="Logo so SmileSync">
+                <h2>Smile<span>Sync</span></h2>
+            </div>
+
+            <nav>
+                <ul>
+                    <h5>Operação</h5>
+
+                    <li>
+                        <a href="dashboard.html" class="nav-link active">
+                            <img src="assets/icons/dash.svg" alt="Ícone Dashboard">
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="pacientes.html" class="nav-link">
+                            <img src="assets/icons/pacientes.svg" alt="Ícone Pacientes">
+                            <span>Pacientes</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="agenda.html" class="nav-link">
+                            <img src="assets/icons/calender.svg" alt="Ícone Agenda">
+                            <span>Agenda</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="tratamentos.html" class="nav-link">
+                            <img src="assets/icons/tratamentos.svg" alt="Ícone tratamentos">
+                            <span>Tratamentos</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="orcamentos.html" class="nav-link">
+                            <img src="assets/icons/orcamentos.svg" alt="Ícone Orçamentos">
+                            <span>Orçamentos</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="financeiro.html" class="nav-link">
+                            <img src="assets/icons/financeiro.svg" alt="Ícone Financeiro">
+                            <span>Financeiro</span>
+                        </a>
+                    </li>
+
+                    <h5>Gestão</h5>
+
+                    <li>
+                        <a href="configuracoes.html" class="nav-link">
+                            <img src="assets/icons/settings.svg" alt="Ícone Configurações">
+                            <span>Configurações</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="dashboard-welcome">
+                    <h1 class="dashboard-title">
+                        Bom dia, Dr. Sidney.
+                    </h1>
+
+                    <div class="calender">
+                        <img src="assets/icons/calender.svg" alt="">
+                        <span class="dashboard-date">Quarta-feira, 16 de setembro</span>
+                    </div>
+                </div>
+            </header>
+
+
+            <div class="dashboard-actions">
+                <button type="button" class="action-card" id="open-drawer-btn">
+                    <img src="assets/icons/novo-paciente.svg" alt="Ícone novo paciente">
+                    <span>Novo paciente</span>
+                </button>
+
+                <a href="agenda.html" class="action-card">
+                    <img src="assets/icons/novo-agendamento.svg" alt="Ícone de um novo agendamento">
+                    <span>Novo agendamento</span>
+                </a>
+
+                <a href="orcamentos.html" class="action-card">
+                    <img src="assets/icons/novo-orcamento.svg" alt="Ícone de um novo Orçamento">
+                    <span>Novo orçamento</span>
+                </a>
+
+                <a href="financeiro.html" class="action-card">
+                    <img src="assets/icons/financeiro.svg" alt="Ícone financeiro">
+                    <span>Registrar pagamento</span>
+                </a>
+            </div>
+
+            <section class="dashboard-metrics">
+
+                <a href="agenda.html" class="metric-card">
+                    <div>
+                        <span class="metric-card-title">Consultas hoje</span>
+                        <img src="assets/icons/arrow-card.svg" alt="Ícone de uma  seta apontando para uma diagonal ">
+                    </div>
+
+                    <strong class="metric-card-value">5</strong>
+
+                    <span class="metric-card-description">1 atendimento concluído</span>
+                </a>
+
+                <a href="agenda.html" class="metric-card">
+                    <div>
+                        <span class="metric-card-title">Aguardando confirmação</span>
+                        <img src="assets/icons/arrow-card.svg" alt="Ícone de uma  seta apontando para uma diagonal ">
+                    </div>
+                    <strong class="metric-card-value">2</strong>
+                    <span class="metric-card-description">Uma mensagem pode resolver</span>
+                </a>
+
+                <a href="tratamentos.html" class="metric-card">
+                    <div>
+                        <span class="metric-card-title">Retornos pendentes</span>
+                        <img src="assets/icons/arrow-card.svg" alt="Ícone de uma  seta apontando para uma diagonal ">
+                    </div>
+                    <strong class="metric-card-value">0</strong>
+                    <span class="metric-card-description">Sem próxima consulta ativa</span>
+                </a>
+
+                <a href="financeiro.html" class="metric-card">
+                    <div>
+                        <span class="metric-card-title">A receber</span>
+                        <img src="assets/icons/arrow-card.svg" alt="Ícone de uma  seta apontando para uma diagonal ">
+                    </div>
+                    <strong class="metric-card-value">R$ 20.880,00</strong>
+                    <span class="metric-card-description">2 parcelas vencidas</span>
+                </a>
+            </section>
+
+            <section class="dashboard-grid-section">
+                <div class="dashboard-agenda-block">
+                    <header class="block-header">
+
+                        <h2 class="block-title">Próximos agendamentos</h2>
+                        <div class="block-header-title-group">
+                            <a href="agenda.html" class="block-link">Abrir agenda
+
+                                <img src="assets/icons/maior-que.svg" alt="Ícone maior que">
+
+                            </a>
+                        </div>
+
+                    </header>
+
+                    <ul class="agenda-list">
+                        <li class="agenda-item">
+                            <div class="agenda-card">
+                                <div class="agenda-item-time">
+                                    <span class="agenda-item-hour">09:00</span>
+                                    <span class="agenda-item-duration">60 min</span>
+                                </div>
+
+                                <div class="agenda-item-avatar">MO</div>
+
+                                <div class="agenda-item-info">
+                                    <strong class="agenda-item-patient">Mariana Oliveira</strong>
+                                    <span class="agenda-item-procedure">Retorno - Implante dentário</span>
+                                    <span class="agenda-item-details">Dr. Sidney — Sala 01</span>
+                                </div>
+                            </div>
+
+                            <div class="agenda-item__status status--confirmed">
+                                <span>Confirmado</span>
+                            </div>
+                        </li>
+
+                        <li class="agenda-item">
+                            <div class="agenda-card">
+                                <div class="agenda-item-time">
+                                    <span class="agenda-item-hour">10:30</span>
+                                    <span class="agenda-item-duration">30 min</span>
+                                </div>
+
+                                <div class="agenda-item-avatar">CH</div>
+
+                                <div class="agenda-item-info">
+                                    <strong class="agenda-item-patient">carlos Henrique</strong>
+                                    <span class="agenda-item-procedure">Manutenção ortodôntica</span>
+                                    <span class="agenda-item-details">Dra. Beatriz — Sala 02 </span>
+                                </div>
+                            </div>
+
+                            <div class="agenda-item__status status--confirmed">
+                                <span>Aguardando confirmação</span>
+                            </div>
+                        </li>
+
+                        <li class="agenda-item">
+                            <div class="agenda-card">
+                                <div class="agenda-item-time">
+                                    <span class="agenda-item-hour">12:00</span>
+                                    <span class="agenda-item-duration">45 min</span>
+                                </div>
+
+                                <div class="agenda-item-avatar">AB</div>
+
+                                <div class="agenda-item-info">
+                                    <strong class="agenda-item-patient">Ana Beatriz</strong>
+                                    <span class="agenda-item-procedure">Avaliação inicial</span>
+                                    <span class="agenda-item-details">Dr. Sidney — Sala 01</span>
+                                </div>
+                            </div>
+
+                            <div class="agenda-item__status status--confirmed">
+                                <span>Aguardando confirmação</span>
+                            </div>
+                        </li>
+
+                        <li class="agenda-item">
+                            <div class="agenda-card">
+                                <div class="agenda-item-time">
+                                    <span class="agenda-item-hour">14:00</span>
+                                    <span class="agenda-item-duration">60 min</span>
+                                </div>
+
+                                <div class="agenda-item-avatar">FA</div>
+
+                                <div class="agenda-item-info">
+                                    <strong class="agenda-item-patient">Fernanda Alves </strong>
+                                    <span class="agenda-item-procedure">Planejamento de facetas </span>
+                                    <span class="agenda-item-details">Dr. Sidney — Sala 01</span>
+                                </div>
+                            </div>
+
+                            <div class="agenda-item__status status--confirmed">
+                                <span>Confirmado</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="dashboard-side-column">
+                    <div class="dashboard-pending-block">
+
+                        <header class="block-header">
+                            <div class="block-header-title-group">
+                                <h2 class="block-title">Atenção hoje</h2>
+                            </div>
+                        </header>
+
+
+                        <div class="pending-list">
+
+                            <article class="pending-item">
+                                <div class="pending-item-icon">
+                                    <img src="assets/icons/calender.svg" alt="Ícone de calendário">
+                                </div>
+                                <div class="pending-item-content">
+                                    <strong>2 consultas aguardam confirmação</strong>
+                                    <a href="agenda.html">Confirmar agenda</a>
+                                </div>
+                            </article>
+
+                            <article class="pending-item">
+                                <div class="pending-item-icon">
+                                    <img src="assets/icons/financeiro.svg" alt="Ícone financeiro">
+                                </div>
+                                <div class="pending-item-content">
+                                    <strong>2 pagamentos estão vencidos</strong>
+                                    <a href="financeiro.html">Ver cobranças</a>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+
+                    <div class="dashboard-rhythm-block">
+                        <div class="rhythm-header">
+                            <img src="assets/icons/clock.svg" alt="Ícone de relógio">
+                            <h3 class="rhythm-title">Ritmo da clínica</h3>
+                        </div>
+
+                        <p class="rhythm-description">
+                            5 pacientes cadastrados e 4 tratamentos em acompanhamento.
+                        </p>
+
+                        <a href="tratamentos.html" class="rhythm-link">Acompanhar tratamentos</a>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <section class="dashboard-footer-section">
+                <div class="dashboard-footer-header">
+                    <h5 class="dashboard-section-title">Ações prioritárias</h5>
+                    <a href="tratamentos.html">Ver tratamentos
+                        <img src="assets/icons/arrow.svg" alt="Seta para direita">
+                    </a>
+                </div>
+
+                <div class="dashboard-priority-container">
+                    <article class="priority-card">
+                        <header class="priority-card-header">
+                            <div class="priority-card-user">
+                                <span class="priority-card-avatar">MO</span>
+                                <div class="priority-card-info">
+                                    <strong class="priority-card-name">Mariana Oliveira</strong>
+                                    <span class="priority-card-procedure">Implante dentário</span>
+                                </div>
+                            </div>
+                            <span class="priority-card-tag priority-card-ag-high">Alta prioridade</span>
+                        </header>
+
+                        <div class="priority-card-body">
+                            <div class="priority-card-status-title">
+                                <img src="assets/icons/alert.svg" alt="Ícone de relógio">
+                                <span>Retorno pós-procedimento</span>
+                            </div>
+                            <p class="priority-card-description">
+                                Etapa prevista para 16 set. Confirme a presença e registre a evolução após o
+                                atendimento.
+                            </p>
+                            <span class="priority-card-meta">Última interação: 15 set</span>
+                        </div>
+
+                        <footer class="priority-card-footer">
+                            <a href="pacientes.html" class="priority-card-link">
+                                Abrir paciente
+                                <img src="assets/icons/maior-que.svg" alt="Ícone maior que">
+                            </a>
+                        </footer>
+                    </article>
+
+                    <article class="priority-card">
+                        <header class="priority-card-header">
+                            <div class="priority-card-user">
+                                <span class="priority-card-avatar">CH</span>
+                                <div class="priority-card-info">
+                                    <strong class="priority-card-name">Carlos Henrique</strong>
+                                    <span class="priority-card-procedure">Ortodontia</span>
+                                </div>
+                            </div>
+                            <span class="priority-card-tag priority-card-tag-high">Alta prioridade</span>
+                        </header>
+
+                        <div class="priority-card-body">
+                            <div class="priority-card-status-title">
+                                <img src="assets/icons/alert.svg" alt="Ícone de relógio">
+                                <span>Próxima manutenção</span>
+                            </div>
+                            <p class="priority-card-description">
+                                Etapa prevista para 16 set. Confirme a presença e registre a evolução após o
+                                atendimento.
+                            </p>
+                            <span class="priority-card-meta">Última interação: 09 set</span>
+                        </div>
+
+                        <footer class="priority-card-footer">
+                            <a href="pacientes.html" class="priority-card-link">
+                                Abrir paciente
+                                <img src="assets/icons/maior-que.svg" alt="Ícone maior que">
+                            </a>
+                        </footer>
+                    </article>
+
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="patient-drawer" class="drawer-overlay">
+        <div class="drawer-content">
+
+            <header class="drawer-header">
+                <div>
+                    <h2>Novo paciente</h2>
+                    <p class="drawer-subtitle">Este registro ficará conectado à ficha do paciente e ao histórico da
+                        clínica.</p>
+                </div>
+                <button type="button" id="close-drawer" class="drawer-close-btn">&times;</button>
+            </header>
+
+            
+            <form id="new-patient-form">
+                <div class="input-group">
+                    <label for="patient-name">Nome completo</label>
+                    <input type="text" id="patient-name" placeholder="Nome e sobrenome" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="patient-phone">WhatsApp / telefone</label>
+                    <input type="text" id="patient-phone" placeholder="(34) 99999-9999" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="patient-email">E-mail</label>
+                    <input type="email" id="patient-email" placeholder="paciente@email.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="patient-city">Cidade</label>
+                    <input type="text" id="patient-city" placeholder="Patos de Minas">
+                </div>
+
+                <div class="input-group">
+                    <label for="patient-obs">Observações de contato</label>
+                    <textarea id="patient-obs" placeholder="Preferências do paciente (opcional)" rows="3"></textarea>
+                </div>
+
+                
+                <div class="drawer-actions">
+                    <button type="button" id="cancel-drawer" class="btn-secondary">Voltar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script src="assets/js/dashboard.js"></script>
+</body>
+
+</html>

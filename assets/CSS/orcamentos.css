@@ -1,0 +1,70 @@
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+
+}
+.flex{
+    display: flex;
+    justify-content: space-between;
+}
+.coluna{
+    flex-direction: column;
+}
+.conteiner{
+    width: 95%;
+    
+}
+.input{
+    width: 200%;
+}
+
+.border-round{
+    border-radius: 20px;
+}
+.table-responsive{
+
+    overflow: hidden;
+    border-radius: 20px;
+    border: 2px solid var(--text-gray);
+    width: 100%;
+    border-collapse: separate;
+
+    
+
+}
+.table-header {
+    background-color: rgb(129, 140, 151);
+}
+th {
+    text-align: left;
+}
+
+.btn-orçamento{
+    
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border-radius: 10px;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-green);
+    border: none;
+    
+    color: white;
+
+
+    & img {
+        width: 1.25rem;
+        width: 1.25rem;
+    }
+}
+
+.coluna select{
+    padding: 0 0.75rem;
+}
+
