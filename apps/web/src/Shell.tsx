@@ -160,11 +160,6 @@ export function Shell() {
               collapsed ? "justify-center" : "justify-between px-2"
             }`}
           >
-            {!collapsed && (
-              <span className="text-[11px] text-muted-foreground">
-                SMILESYNC <span className="ml-1 text-primary">by LOGOS</span>
-              </span>
-            )}
             <IconButton
               label={collapsed ? "Expandir menu" : "Recolher menu"}
               className="size-8"
