@@ -249,12 +249,6 @@ export function Shell() {
               {authMode === "demo"
                 ? "Demonstração · dados fictícios"
                 : "Conectado · dados persistidos"}
-            </span>
-          </div>
-          {storageError && (
-            <div
-              role="alert"
-              className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-900"
             >
               <span>
                 Não foi possível sincronizar com o servidor. Nenhuma alteração pendente será
