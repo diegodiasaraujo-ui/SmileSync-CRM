@@ -244,11 +244,11 @@ export function Shell() {
               Operação <span className="mx-2 text-slate-300">/</span>
               <span className="text-foreground">{matchingNav?.title || "Dashboard"}</span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-primary" />
-              {authMode === "demo"
-                ? "Demonstração · dados fictícios"
-                : "Conectado · dados persistidos"}
+          </div>
+          {storageError && (
+            <div
+              role="alert"
+              className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-900"
             >
               <span>
                 Não foi possível sincronizar com o servidor. Nenhuma alteração pendente será
