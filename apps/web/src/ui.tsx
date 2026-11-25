@@ -10,17 +10,21 @@ import {
 import { X, ArrowUpRight, Search, Check, ChevronRight } from "lucide-react";
 import { createPortal } from "react-dom";
 
-export function Mark({ compact = false }: { compact?: boolean }) {
+export function Mark({
+  compact = false,
+  inverse = false,
+}: {
+  compact?: boolean;
+  inverse?: boolean;
+}) {
   return (
-    <div className="flex items-center gap-2.5" aria-label="SmileSync">
-      <span className="relative flex size-8 shrink-0 -rotate-12 items-center justify-center rounded-[10px] border-2 border-primary">
-        <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary" />
-        <span className="mt-2 h-2 w-3 rounded-b-full border-b-2 border-primary" />
-      </span>
+    <div
+      className={`flex items-center gap-2 ${inverse ? "brand-inverse text-white" : ""}`}
+      aria-label="SmileSync"
+    >
+      <span aria-hidden="true" className="brand-symbol size-9 shrink-0" />
       {!compact && (
-        <span className="text-[23px] font-semibold tracking-[-0.7px]">
-          Smile<span className="text-primary">Sync</span>
-        </span>
+        <span className="font-display text-[23px] font-extrabold tracking-[-0.9px]">SmileSync</span>
       )}
     </div>
   );
@@ -35,8 +39,9 @@ export function Button({
   children: ReactNode;
 }) {
   const colors = {
-    primary: "bg-primary text-white hover:bg-[#19584f]",
-    secondary: "border border-border bg-white text-foreground hover:bg-muted",
+    primary: "bg-primary text-primary-foreground shadow-panel hover:bg-primary-hover",
+    secondary:
+      "border border-border bg-white text-foreground hover:border-primary/40 hover:bg-secondary",
     ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
     danger: "bg-red-50 text-red-700 hover:bg-red-100",
   };
@@ -116,7 +121,7 @@ export function Avatar({
   );
 }
 export const inputClass =
-  "min-h-10 min-w-0 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground hover:border-[#adbfb8] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:bg-muted disabled:text-muted-foreground aria-invalid:border-red-600";
+  "min-h-10 min-w-0 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:bg-muted disabled:text-muted-foreground aria-invalid:border-red-600";
 export function Field({
   label,
   hint,
@@ -162,7 +167,9 @@ export function Header({
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 className="text-[25px] font-semibold tracking-[-0.5px] sm:text-[27px]">{title}</h1>
+        <h1 className="font-display text-[28px] font-extrabold leading-tight tracking-tight sm:text-[33px]">
+          {title}
+        </h1>
         {subtitle && (
           <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{subtitle}</p>
         )}
@@ -186,12 +193,12 @@ export function Panel({
 }) {
   return (
     <section
-      className={`min-w-0 overflow-hidden rounded-xl border border-border bg-card ${className}`}
+      className={`min-w-0 overflow-hidden rounded-xl border border-border bg-card shadow-panel ${className}`}
     >
       {title && (
-        <div className="flex flex-wrap items-center justify-between gap-2 px-5 pb-4 pt-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3.5 sm:px-5">
           <div>
-            <h2 className="text-sm font-semibold">{title}</h2>
+            <h2 className="font-display text-[16px] font-extrabold tracking-[-0.02em]">{title}</h2>
             {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
           </div>
           {action}
@@ -217,22 +224,31 @@ export function Metric({
   value,
   detail,
   attention,
+  icon,
   onClick,
 }: {
   label: string;
   value: string | number;
   detail: string;
   attention?: boolean;
+  icon?: ReactNode;
   onClick?: () => void;
 }) {
   const Component = onClick ? "button" : "div";
   return (
     <Component
       onClick={onClick}
-      className={`group min-w-0 px-5 py-5 text-left transition-colors disabled:cursor-default ${
+      className={`group w-full min-w-0 px-4 py-5 text-left transition-colors disabled:cursor-default sm:px-5 ${
         onClick ? "hover:bg-muted/60" : ""
       }`}
     >
+      {icon && (
+        <span
+          className={`mb-3 inline-flex size-9 items-center justify-center rounded-lg ${attention ? "bg-amber-50 text-amber-800" : "bg-secondary text-primary"}`}
+        >
+          {icon}
+        </span>
+      )}
       <div className="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground">
         {label}
         {onClick && <ArrowUpRight size={14} className="opacity-50 group-hover:opacity-100" />}
@@ -315,7 +331,7 @@ export function Overlay({
       onClick={(event) => {
         if (event.target === ref.current) onClose();
       }}
-      className={`fixed max-h-dvh w-full bg-white p-0 text-foreground shadow-xl backdrop:bg-[#152e29]/25 backdrop:backdrop-blur-[2px] ${
+      className={`fixed max-h-dvh w-full bg-white p-0 text-foreground shadow-xl backdrop:bg-navigation/30 backdrop:backdrop-blur-[2px] ${
         drawer
           ? "inset-y-0 left-auto right-0 m-0 h-dvh max-w-lg rounded-none"
           : "inset-0 m-auto max-h-[90dvh] max-w-lg rounded-xl"

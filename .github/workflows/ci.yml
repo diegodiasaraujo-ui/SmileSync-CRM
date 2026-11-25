@@ -12,6 +12,19 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: smilesync_test
+          POSTGRES_PASSWORD: ci-only-smilesync
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,4 +38,11 @@ jobs:
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm test
+      - run: npm run test:webhook
+      - name: PostgreSQL 17 integration
+        run: |
+          pnpm --filter @smilesync/api exec vitest run src/routes/postgres-release.test.ts
+          pnpm --filter @smilesync/api exec vitest run src/routes/whatsapp.test.ts
+        env:
+          SMILESYNC_TEST_POSTGRES_URL: postgresql://postgres:ci-only-smilesync@127.0.0.1:5432/smilesync_test
       - run: pnpm build

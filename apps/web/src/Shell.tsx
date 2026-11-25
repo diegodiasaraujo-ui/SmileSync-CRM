@@ -21,6 +21,7 @@ import {
   Command,
   ShieldCheck,
   Building2,
+  MessageCircle,
 } from "lucide-react";
 import { useDemo } from "./store";
 import { Mark, Button, IconButton, Avatar, Overlay, Badge, Skeleton, Empty } from "./ui";
@@ -28,23 +29,26 @@ import { DEMO_DATE, shortDate, currency } from "./data";
 import { ActionLayer } from "./Actions";
 import { FINANCE_MODULE_LABEL, TREATMENTS_MODULE_LABEL } from "./moduleLabels";
 const navigation = [
-  { title: "Dashboard", path: "/app", icon: LayoutDashboard },
-  { title: "Pacientes", path: "/app/pacientes", icon: UsersRound },
-  { title: "Agenda", path: "/app/agenda", icon: CalendarDays },
-  { title: TREATMENTS_MODULE_LABEL, path: "/app/tratamentos", icon: Activity },
+  { title: "Dashboard", path: "/app", icon: LayoutDashboard, section: "Operação" },
+  { title: "Pacientes", path: "/app/pacientes", icon: UsersRound, section: "Operação" },
+  { title: "Agenda", path: "/app/agenda", icon: CalendarDays, section: "Operação" },
+  { title: TREATMENTS_MODULE_LABEL, path: "/app/tratamentos", icon: Activity, section: "Operação" },
+  { title: "WhatsApp", path: "/app/whatsapp", icon: MessageCircle, section: "Atendimento" },
   {
     title: "Orçamentos",
     path: "/app/orcamentos",
     icon: FileText,
+    section: "Gestão",
     financial: true,
   },
   {
     title: FINANCE_MODULE_LABEL,
     path: "/app/financeiro",
     icon: Wallet,
+    section: "Gestão",
     financial: true,
   },
-  { title: "Configurações", path: "/app/configuracoes", icon: Settings2 },
+  { title: "Configurações", path: "/app/configuracoes", icon: Settings2, section: "Gestão" },
 ];
 export function Shell() {
   const { data, role, canFinance, storageError, retryStorage, loading, authMode, logout, notify } =
@@ -79,18 +83,15 @@ export function Shell() {
     setMobile(false);
   };
   const links = navigation.filter((item) => !item.financial || canFinance);
-  const nav = (
+  const nav = (dark: boolean) => (
     <>
       {links.map((item, index) => (
         <div key={item.path}>
-          {item.title === "Configurações" && !collapsed && (
-            <p className="mb-2 mt-8 px-3 text-[11px] font-medium tracking-[0.13em] text-muted-foreground">
-              GESTÃO
-            </p>
-          )}
-          {index === 0 && !collapsed && (
-            <p className="mb-3 px-3 text-[11px] font-medium tracking-[0.13em] text-muted-foreground">
-              OPERAÇÃO
+          {!collapsed && item.section !== links[index - 1]?.section && (
+            <p
+              className={`mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] ${index ? "mt-4 border-t border-current/15 pt-4" : ""} ${dark ? "text-navigation-muted" : "text-muted-foreground"}`}
+            >
+              {item.section}
             </p>
           )}
           <NavLink
@@ -98,10 +99,14 @@ export function Shell() {
             to={item.path}
             title={item.title}
             className={({ isActive }) =>
-              `mb-1 flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors ${
-                isActive
-                  ? "bg-accent text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              `workspace-nav-item mb-0.5 flex min-h-10 items-center gap-3 rounded-lg px-3 py-1.5 text-[13px] font-medium leading-tight transition-colors ${
+                dark
+                  ? isActive
+                    ? "bg-primary text-white"
+                    : "text-blue-50/90 hover:bg-white/10 hover:text-white"
+                  : isActive
+                    ? "bg-secondary text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
               } ${collapsed ? "justify-center" : ""}`
             }
           >
@@ -125,22 +130,37 @@ export function Shell() {
         Ir para o conteúdo
       </a>
       <aside
-        className={`sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-[#fbfcfc] p-4 transition-[width] lg:flex ${
-          collapsed ? "w-[76px]" : "w-[226px]"
+        className={`workspace-sidebar sticky top-0 hidden h-dvh shrink-0 flex-col px-3.5 pb-4 text-white transition-[width] lg:flex ${
+          collapsed ? "w-[68px]" : "w-[222px]"
         }`}
       >
-        <div className={`mb-8 mt-3 flex ${collapsed ? "justify-center" : "px-2"}`}>
-          <Mark compact={collapsed} />
+        <div
+          className={`mb-5 flex h-[66px] shrink-0 items-center ${collapsed ? "justify-center" : "justify-between px-1.5"}`}
+        >
+          <NavLink to="/app" end aria-label="SmileSync, início" className="rounded-md">
+            <Mark compact={collapsed} inverse />
+          </NavLink>
+          {!collapsed && (
+            <button
+              type="button"
+              aria-label="Recolher menu"
+              title="Recolher menu"
+              className="grid size-7 place-items-center rounded-md text-navigation-muted hover:bg-white/10 hover:text-white"
+              onClick={() => setCollapsed(true)}
+            >
+              <PanelLeftClose size={15} />
+            </button>
+          )}
         </div>
-        <nav aria-label="Navegação principal" className="flex-1">
-          {nav}
+        <nav aria-label="Navegação principal" className="min-h-0 flex-1 overflow-y-auto">
+          {nav(true)}
         </nav>
-        <div className="border-t border-border pt-4">
+        <div className="mt-4 shrink-0 border-t border-white/15 pt-3">
           <button
             onClick={() => setPopup("profile")}
             aria-label="Abrir perfil do usuário"
             title="Perfil e preferências"
-            className={`flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left hover:bg-muted ${
+            className={`flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left hover:bg-white/10 ${
               collapsed ? "justify-center" : ""
             }`}
           >
@@ -148,30 +168,30 @@ export function Shell() {
             {!collapsed && (
               <>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-medium">{data.account.name}</span>
-                  <span className="block truncate pt-1 text-xs text-muted-foreground">{role}</span>
+                  <span className="block truncate text-xs font-semibold">{data.account.name}</span>
+                  <span className="block truncate pt-1 text-xs text-navigation-muted">{role}</span>
                 </span>
                 <ChevronDown size={14} />
               </>
             )}
           </button>
-          <div
-            className={`mt-3 flex items-center ${
-              collapsed ? "justify-center" : "justify-between px-2"
-            }`}
-          >
-            <IconButton
-              label={collapsed ? "Expandir menu" : "Recolher menu"}
-              className="size-8"
-              onClick={() => setCollapsed(!collapsed)}
-            >
-              {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-            </IconButton>
-          </div>
+          {collapsed && (
+            <div className="mt-2 flex items-center justify-center">
+              <button
+                type="button"
+                aria-label="Expandir menu"
+                title="Expandir menu"
+                className="grid size-8 place-items-center rounded-lg text-navigation-muted hover:bg-white/10 hover:text-white"
+                onClick={() => setCollapsed(false)}
+              >
+                <PanelLeftOpen size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 flex h-[72px] items-center justify-between gap-3 border-b border-border bg-white/95 px-4 backdrop-blur-sm sm:px-7">
+        <header className="sticky top-0 z-20 flex h-[62px] items-center justify-between gap-2 border-b border-border bg-white/95 px-3 backdrop-blur-sm sm:gap-3 sm:px-7">
           <div className="flex min-w-0 items-center gap-3">
             <IconButton
               label="Abrir menu"
@@ -183,14 +203,14 @@ export function Shell() {
             >
               <Menu size={20} />
             </IconButton>
-            <span className="hidden size-8 items-center justify-center rounded-lg bg-secondary text-primary sm:flex">
-              <Building2 size={17} />
+            <span className="hidden size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-primary sm:flex">
+              <Building2 size={19} />
             </span>
             <div className="min-w-0">
-              <p className="max-w-[260px] truncate text-xs font-medium xl:max-w-none">
+              <p className="truncate text-[13px] font-bold sm:max-w-[260px] xl:max-w-none">
                 {data.clinic}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
                 {data.clinicCity} <span className="hidden xl:inline">· Clínica odontológica</span>
               </p>
             </div>
@@ -199,7 +219,7 @@ export function Shell() {
             <button
               onClick={() => setPopup("search")}
               aria-label="Busca global, Control K"
-              className="flex h-9 items-center gap-2 rounded-lg bg-muted/65 px-3 text-xs text-muted-foreground xl:w-[280px]"
+              className="flex h-9 items-center gap-2 rounded-lg border border-transparent bg-muted/65 px-2.5 text-xs text-muted-foreground hover:border-border hover:bg-muted xl:w-[270px]"
             >
               <Search size={16} />
               <span className="hidden xl:inline">Buscar na clínica...</span>
@@ -237,13 +257,21 @@ export function Shell() {
         <main
           id="main"
           tabIndex={-1}
-          className="mx-auto max-w-[1720px] px-4 pb-24 pt-6 outline-none sm:px-7 lg:pb-8 xl:px-8"
+          className="mx-auto max-w-[1620px] px-3.5 pb-24 pt-4 outline-none sm:px-6 lg:pb-8 xl:px-7"
         >
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>
-              Operação <span className="mx-2 text-slate-300">/</span>
-              <span className="text-foreground">{matchingNav?.title || "Dashboard"}</span>
-            </span>
+          <div className="mb-3.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+            <nav aria-label="Localização" className="flex items-center gap-1.5">
+              {matchingNav?.section ?? "Operação"} <ArrowRight aria-hidden="true" size={10} />
+              <span aria-current="page" className="font-semibold text-foreground">
+                {matchingNav?.title || "Dashboard"}
+              </span>
+            </nav>
+            {authMode === "demo" && (
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-primary" />
+                Demonstração · dados fictícios
+              </span>
+            )}
           </div>
           {storageError && (
             <div
@@ -267,10 +295,8 @@ export function Shell() {
         className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-border bg-white px-2 pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         {navigation
-          .filter(
-            (item) =>
-              ["/app", "/app/agenda", "/app/pacientes"].includes(item.path) ||
-              (item.path === "/app/financeiro" && canFinance),
+          .filter((item) =>
+            ["/app", "/app/agenda", "/app/pacientes", "/app/whatsapp"].includes(item.path),
           )
           .map((item) => (
             <NavLink
@@ -303,7 +329,7 @@ export function Shell() {
           <div className="mb-8">
             <Mark />
           </div>
-          <nav aria-label="Módulos da clínica">{nav}</nav>
+          <nav aria-label="Módulos da clínica">{nav(false)}</nav>
           <Button
             variant="ghost"
             className="mt-6"

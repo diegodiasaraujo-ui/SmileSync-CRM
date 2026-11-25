@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import {
   Plus,
   Building2,
@@ -14,13 +14,18 @@ import {
   HeartPulse,
   UserRoundCheck,
   ShieldCheck,
+  ChevronRight,
+  MapPin,
+  Globe2,
 } from "lucide-react";
 import { useDemo } from "./store";
 import { uid, type Role } from "./data";
-import { Header, Button, Field, Select, Panel, Badge, Table, Toggle, Overlay, Avatar } from "./ui";
+import { Button, Field, Select, Panel, Badge, Table, Toggle, Overlay, Avatar } from "./ui";
+import { ModuleHeader } from "./ModuleSurface";
 const roles: Role[] = ["Administrador", "Dentista", "Secretária", "Recepção", "Financeiro"];
 export function Settings() {
-  const { data, update, notify, role, setRole, authMode, command } = useDemo();
+  const { data, update, notify, role, setRole, authMode, command, permissions } = useDemo();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const sections = [
     "Minha conta",
@@ -49,6 +54,14 @@ export function Settings() {
     }
   };
   const icons = [UserRound, Building2, UsersRound, MessageCircle, Zap, SlidersHorizontal];
+  const descriptions = [
+    "Perfil e contato",
+    "Cadastro e localização",
+    "Membros e funções",
+    "Canal de atendimento",
+    "Regras de acompanhamento",
+    "Ajustes de visualização",
+  ];
   const rules = [
     {
       title: "Lembrete de consulta",
@@ -88,12 +101,15 @@ export function Settings() {
   ];
   return (
     <>
-      <Header
+      <ModuleHeader
         title="Configurações"
-        subtitle="Organize a clínica, os acessos e as regras da operação."
+        description="Gerencie os dados da clínica, as permissões e os canais de atendimento."
       />
-      <div className="grid gap-5 lg:grid-cols-[210px_1fr]">
-        <nav aria-label="Seções de configurações" className="flex gap-1 overflow-x-auto lg:block">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(215px,250px)_minmax(0,1fr)]">
+        <nav
+          aria-label="Seções de configurações"
+          className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-card p-2 shadow-panel sm:grid-cols-3 lg:grid-cols-1 lg:p-3"
+        >
           {sections.map((section, index) => {
             const Icon = icons[index];
             return (
@@ -101,83 +117,115 @@ export function Settings() {
                 key={section}
                 onClick={() => setParams({ secao: section })}
                 aria-pressed={selected === section}
-                className={`mb-1 flex min-h-11 shrink-0 items-center gap-2.5 rounded-lg px-3 text-[13px] lg:w-full ${
-                  selected === section
-                    ? "bg-accent font-medium text-primary"
-                    : "text-muted-foreground hover:bg-muted"
+                className={`group flex min-h-12 min-w-0 items-center gap-2 rounded-lg px-2 py-2 text-left text-xs transition-colors sm:px-3 lg:min-h-[3.4rem] lg:gap-2.5 ${
+                  selected === section ? "bg-accent text-primary" : "text-foreground hover:bg-muted"
                 }`}
               >
-                <Icon size={17} />
-                {section}
+                <span
+                  className={`grid size-7 shrink-0 place-items-center rounded-md lg:size-8 ${selected === section ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
+                >
+                  <Icon size={15} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{section}</span>
+                  <span className="mt-0.5 hidden text-[11px] text-muted-foreground lg:block">
+                    {descriptions[index]}
+                  </span>
+                </span>
+                <ChevronRight
+                  className={`hidden shrink-0 lg:block ${selected === section ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                  size={14}
+                />
               </button>
             );
           })}
         </nav>
-        <div>
+        <div className="min-w-0">
           {selected === "Clínica" && (
-            <Panel
-              title="Dados da clínica"
-              subtitle="Informações compartilhadas por toda a operação."
-            >
-              <form
-                className="space-y-5 px-5 pb-5"
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  const fields = new FormData(event.currentTarget);
-                  const changes = {
-                    name: String(fields.get("clinic")),
-                    phone: clinicPhone,
-                    city,
-                  };
-                  if (authMode === "authenticated") {
-                    if (!(await persist("clinic.update", changes))) return;
-                  } else
-                    update((previous) => ({
-                      ...previous,
-                      clinic: changes.name,
-                      clinicPhone,
-                      clinicCity: city,
-                    }));
-                  notify("Dados da clínica atualizados.");
-                }}
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_14rem]">
+              <Panel
+                title="Dados da clínica"
+                subtitle="Informações compartilhadas por toda a operação."
               >
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field
-                    label="Nome da clínica"
-                    name="clinic"
-                    defaultValue={data.clinic}
-                    required
-                    disabled={!isAdmin}
-                  />
-                  <Field label="Responsável" defaultValue={data.account.name} disabled />
-                  <Field
-                    label="Telefone / WhatsApp"
-                    value={clinicPhone}
-                    onChange={(event) => setClinicPhone(event.target.value)}
-                    type="tel"
-                    disabled={!isAdmin}
-                  />
-                  <Field
-                    label="Cidade"
-                    value={city}
-                    onChange={(event) => setCity(event.target.value)}
-                    disabled={!isAdmin}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Fuso horário: América / São Paulo · Moeda: Real brasileiro
-                </p>
-                <Button type="submit" disabled={!isAdmin}>
-                  <Save size={16} />
-                  Salvar alterações
-                </Button>
-                {!isAdmin && (
-                  <p className="text-xs text-muted-foreground">
-                    Somente o administrador pode alterar dados da clínica.
-                  </p>
-                )}
-              </form>
-            </Panel>
+                <form
+                  className="space-y-5 px-5 pb-5"
+                  onSubmit={async (event) => {
+                    event.preventDefault();
+                    const fields = new FormData(event.currentTarget);
+                    const changes = {
+                      name: String(fields.get("clinic")),
+                      phone: clinicPhone,
+                      city,
+                    };
+                    if (authMode === "authenticated") {
+                      if (!(await persist("clinic.update", changes))) return;
+                    } else
+                      update((previous) => ({
+                        ...previous,
+                        clinic: changes.name,
+                        clinicPhone,
+                        clinicCity: city,
+                      }));
+                    notify("Dados da clínica atualizados.");
+                  }}
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field
+                      label="Nome da clínica"
+                      name="clinic"
+                      defaultValue={data.clinic}
+                      required
+                      disabled={!isAdmin}
+                    />
+                    <Field label="Responsável" defaultValue={data.account.name} disabled />
+                    <Field
+                      label="Telefone / WhatsApp"
+                      value={clinicPhone}
+                      onChange={(event) => setClinicPhone(event.target.value)}
+                      type="tel"
+                      disabled={!isAdmin}
+                    />
+                    <Field
+                      label="Cidade"
+                      value={city}
+                      onChange={(event) => setCity(event.target.value)}
+                      disabled={!isAdmin}
+                    />
+                  </div>
+                  <Button type="submit" disabled={!isAdmin}>
+                    <Save size={16} />
+                    Salvar alterações
+                  </Button>
+                  {!isAdmin && (
+                    <p className="text-xs text-muted-foreground">
+                      Somente o administrador pode alterar dados da clínica.
+                    </p>
+                  )}
+                </form>
+              </Panel>
+              <Panel title="Dados operacionais">
+                <dl className="grid gap-4 px-5 pb-5 text-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="rounded-lg bg-secondary p-2 text-primary">
+                      <Globe2 size={16} />
+                    </span>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Fuso horário</dt>
+                      <dd className="mt-1 font-medium">América / São Paulo</dd>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="rounded-lg bg-secondary p-2 text-primary">
+                      <MapPin size={16} />
+                    </span>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Moeda</dt>
+                      <dd className="mt-1 font-medium">Real brasileiro (BRL)</dd>
+                    </div>
+                  </div>
+                </dl>
+              </Panel>
+            </div>
           )}
           {selected === "Minha conta" && (
             <Panel title="Minha conta">
@@ -309,36 +357,42 @@ export function Settings() {
               title="WhatsApp da clínica"
               subtitle={
                 authMode === "demo"
-                  ? "Demonstração do fluxo de rascunhos, sem envio."
-                  : "Integração oficial ainda não configurada."
+                  ? "Simulação do atendimento, sem envio real."
+                  : "Canal usado para o atendimento pelo CRM."
               }
             >
               <div className="space-y-5 px-5 pb-5">
                 <div className="flex items-center gap-3 rounded-lg bg-secondary p-4">
                   <MessageCircle className="text-primary" size={23} />
                   <div>
-                    <p className="text-sm font-medium">WhatsApp Business</p>
+                    <p className="text-sm font-medium">WhatsApp</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {clinicPhone || "Telefone não informado"}
                     </p>
                   </div>
-                  <Badge>Não configurada</Badge>
                 </div>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {authMode === "demo"
-                    ? "No modo de demonstração, as mensagens ficam apenas nos dados fictícios desta sessão. Nenhuma conversa é aberta e nada é enviado."
-                    : "As ações de mensagem salvam somente um rascunho no SmileSync. Nenhuma conversa é aberta e nenhum conteúdo é enviado até a API oficial do WhatsApp Business ser configurada."}
+                    ? "Use conversas fictícias para apresentar o envio, o recebimento e a entrega de mensagens."
+                    : "Consulte a configuração do canal na caixa de entrada. Os atalhos de rascunho do prontuário apenas registram o texto no histórico do paciente."}
                 </p>
-                <Button variant="secondary" onClick={() => setParams({ secao: "Automações" })}>
-                  Revisar regras de mensagem
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {(authMode === "demo" || permissions.includes("whatsapp.inbox.read")) && (
+                    <Button onClick={() => navigate("/app/whatsapp")}>
+                      {authMode === "demo" ? "Abrir simulação" : "Abrir conversas"}
+                    </Button>
+                  )}
+                  <Button variant="secondary" onClick={() => setParams({ secao: "Automações" })}>
+                    Revisar regras de mensagem
+                  </Button>
+                </div>
               </div>
             </Panel>
           )}
           {selected === "Automações" && (
             <Panel
               title="Automações por objetivo"
-              subtitle="As regras são persistidas, mas o executor e o envio externo ainda não estão configurados."
+              subtitle="As regras abaixo organizam rascunhos e tarefas. O agendamento por conversa é configurado separadamente."
             >
               <div className="divide-y divide-border">
                 {rules.map((rule, index) => (

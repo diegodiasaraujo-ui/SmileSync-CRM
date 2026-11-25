@@ -1,13 +1,16 @@
 {
   "name": "smilesync",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.3.0",
   "packageManager": "pnpm@11.25.0",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
-    "start": "pnpm dev",
+    "start": "node scripts/start-local.mjs",
+    "omni:webhook": "node scripts/omni-webhook.mjs",
+    "omni:register": "node scripts/omni-register.mjs",
+    "test:webhook": "node --test scripts/omni-webhook.test.mjs",
     "dev": "pnpm --parallel --filter @smilesync/api --filter @smilesync/web dev",
     "build": "pnpm --filter @smilesync/api build && pnpm --filter @smilesync/web build",
     "typecheck": "pnpm -r typecheck",

@@ -1,6 +1,7 @@
 @import "./styles/fonts.css";
 @import "tailwindcss";
 @import "./styles/theme.css";
+@import "./styles/workspace.css";
 
 @layer base {
   body {
@@ -10,6 +11,11 @@
     background: var(--background);
     font-synthesis: none;
     -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
   }
   button,
   input,
@@ -35,8 +41,8 @@
     accent-color: var(--primary);
   }
   ::selection {
-    background: #d5e9e0;
-    color: #174a42;
+    background: var(--accent);
+    color: var(--secondary-foreground);
   }
   dialog {
     border: 0;

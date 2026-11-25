@@ -13,21 +13,35 @@ import {
   Settings2,
   UserRound,
   MessageCircle,
+  LockKeyhole,
+  Mail,
 } from "lucide-react";
 import { useDemo } from "./store";
-import { Mark, Button, Field, IconButton, Overlay, inputClass, Badge, Select } from "./ui";
+import { Mark, Button, Field, IconButton, inputClass, Badge, Select } from "./ui";
 function AuthFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-[#f4f8f6]">
-      <header className="px-6 py-7 sm:px-10">
-        <Mark />
-      </header>
-      <main className="flex flex-1 items-center justify-center px-5 pb-12">
-        <div className="w-full max-w-[440px] rounded-2xl border border-border bg-white px-7 py-9 sm:px-10">
+    <div className="auth-screen relative isolate flex min-h-dvh flex-col overflow-hidden">
+      <div aria-hidden="true" className="auth-decoration pointer-events-none absolute -z-10" />
+      <main className="mx-auto grid w-full max-w-[1110px] flex-1 content-center items-center gap-8 px-5 py-10 md:grid-cols-[1fr_minmax(350px,442px)] md:gap-16 md:px-12 xl:gap-24">
+        <div className="mx-auto w-full max-w-[442px] text-white md:mx-0">
+          <div className="inline-flex lg:[&_span:last-child]:text-[34px]">
+            <Mark inverse />
+          </div>
+          <div className="mt-10 hidden max-w-lg md:block">
+            <p className="font-display text-[35px] font-extrabold leading-[1.12] tracking-[-0.035em] xl:text-[46px]">
+              Gestão odontológica simples e inteligente.
+            </p>
+            <div aria-hidden="true" className="mt-6 h-px w-12 bg-navigation-accent" />
+            <p className="mt-5 max-w-[340px] text-[15px] leading-relaxed text-navigation-muted">
+              Organize pacientes, consultas, tratamentos e finanças em um só lugar.
+            </p>
+          </div>
+        </div>
+        <div className="mx-auto w-full max-w-[442px] rounded-[20px] border border-white/70 bg-white px-6 py-8 shadow-[0_18px_70px_rgb(2_13_45/30%)] sm:px-9 sm:py-9">
           {children}
         </div>
       </main>
-      <footer className="flex items-center justify-center gap-2 px-5 pb-6 text-xs text-muted-foreground">
+      <footer className="flex items-center justify-center gap-2 px-5 pb-6 text-xs text-navigation-muted">
         <ShieldCheck size={14} />
         Sessão protegida · não compartilhe sua senha
       </footer>
@@ -50,8 +64,13 @@ function PasswordField({
     <label className="grid gap-1.5 text-[13px] font-medium">
       {label}
       <span className="relative">
+        <LockKeyhole
+          aria-hidden="true"
+          size={15}
+          className="pointer-events-none absolute left-3 top-3 text-muted-foreground"
+        />
         <input
-          className={`${inputClass} pr-12`}
+          className={`${inputClass} pl-9 pr-12`}
           name={name}
           type={visible ? "text" : "password"}
           required
@@ -74,7 +93,6 @@ export function Login() {
   const navigate = useNavigate();
   const { login, enterDemo } = useDemo();
   const [loading, setLoading] = useState(false);
-  const [google, setGoogle] = useState(false);
   const [error, setError] = useState("");
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -97,21 +115,31 @@ export function Login() {
   };
   return (
     <AuthFrame>
-      <div className="mb-8">
-        <h1 className="text-[26px] font-semibold tracking-[-0.4px]">Bem-vindo</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Entre para continuar sua operação.</p>
+      <div className="mb-7">
+        <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.035em]">Bem-vindo</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Acesse a conta da sua clínica.</p>
       </div>
-      <form onSubmit={submit} className="space-y-5">
-        <Field
-          label="E-mail"
-          name="email"
-          type="email"
-          placeholder="voce@clinica.com.br"
-          autoComplete="email"
-          required
-        />
+      <form onSubmit={submit} className="space-y-4">
+        <label className="grid gap-1.5 text-[13px] font-medium">
+          E-mail
+          <span className="relative">
+            <Mail
+              aria-hidden="true"
+              size={16}
+              className="pointer-events-none absolute left-3 top-3 text-muted-foreground"
+            />
+            <input
+              className={`${inputClass} pl-9`}
+              name="email"
+              type="email"
+              placeholder="voce@clinica.com.br"
+              autoComplete="email"
+              required
+            />
+          </span>
+        </label>
         <PasswordField />
-        <div className="flex items-center justify-end gap-3">
+        <div className="-mt-2 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => navigate("/recuperar")}
@@ -125,19 +153,11 @@ export function Login() {
             {error}
           </p>
         )}
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full min-h-11 font-semibold" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}
           <ArrowRight size={16} />
         </Button>
       </form>
-      <div className="my-5 flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="h-px flex-1 bg-border" />
-        ou
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <Button variant="secondary" className="w-full" onClick={() => setGoogle(true)}>
-        <span className="text-base font-semibold">G</span>Continuar com Google
-      </Button>
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Ainda não tem uma conta?{" "}
         <button
@@ -147,7 +167,7 @@ export function Login() {
           Criar minha conta
         </button>
       </p>
-      <div className="mt-4 border-t border-border pt-4 text-center">
+      <div className="mt-3 border-t border-border pt-3 text-center">
         <button
           className="min-h-9 text-xs font-medium text-primary hover:underline"
           onClick={() => {
@@ -158,17 +178,6 @@ export function Login() {
           Explorar demonstração sem login →
         </button>
       </div>
-      {google && (
-        <Overlay title="Acesso com Google · demonstração" onClose={() => setGoogle(false)}>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            A integração OAuth ainda não está configurada neste ambiente. Use e-mail e senha ou
-            entre no modo de demonstração explicitamente.
-          </p>
-          <Button className="mt-5 w-full" onClick={() => setGoogle(false)}>
-            Entendi
-          </Button>
-        </Overlay>
-      )}
     </AuthFrame>
   );
 }

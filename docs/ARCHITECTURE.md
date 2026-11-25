@@ -40,6 +40,7 @@ As rotas são separadas por responsabilidade:
 - `auth.ts`: cadastro, login, sessão, logout e recuperação;
 - `bootstrap.ts`: projeção tenant-scoped compatível com a interface e filtrada por permissão;
 - `commands.ts`: mutações específicas, autorização, transações, idempotência e auditoria.
+- `whatsapp.ts`: conversas autenticadas, envio pela Cloud API e webhook de mensagens/status.
 
 ### Banco
 
@@ -127,7 +128,7 @@ Valores são `numeric(14,2)`. Parcelas e alocações usam restrições e, no Pos
 - `audit_logs`;
 - `data_retention_policies`, `data_erasure_requests`.
 
-Essas tabelas preparam o domínio, mas criar uma tabela não significa que um provedor, fila ou rotina esteja ativo.
+O canal WhatsApp oficial mantém suas conversas e envios em `whatsapp_conversations` e `whatsapp_messages`. Os rascunhos preexistentes continuam em `message_events`. O agendamento usa `whatsapp_booking_settings` e `whatsapp_booking_services` para regras e catálogo, e grava a consulta confirmada em `appointments` com `source = 'whatsapp'`. Para ativar o número e o webhook, consulte [WhatsApp Cloud API](WHATSAPP.md).
 
 ## Consistência temporal e financeira
 

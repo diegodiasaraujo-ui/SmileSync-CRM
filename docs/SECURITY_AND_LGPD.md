@@ -84,7 +84,7 @@ A matriz é uma decisão inicial e deve ser confirmada pela clínica. Alterar o 
 
 ## WhatsApp e comunicação
 
-O envio real está desativado. Antes de ativá-lo, são obrigatórios:
+O canal WhatsApp exige configuração por clínica. Antes de ativá-lo com pacientes reais, verifique:
 
 1. conta oficial na WhatsApp Business Platform;
 2. número e empresa verificados conforme exigência vigente do provedor;
@@ -139,7 +139,7 @@ Não autorizar produção antes de:
 - recuperação de senha não possui entrega de e-mail configurada;
 - rate limit em memória não é suficiente para várias instâncias;
 - fila/worker e reprocessamento de automações não estão ativos;
-- integração de WhatsApp e verificação de webhook não estão ativas;
+- a configuração da Meta e a verificação de webhook em um ambiente público precisam de ensaio com o número da clínica;
 - documentos clínicos ainda não possuem storage;
 - políticas RLS ainda não foram validadas em PostgreSQL de homologação;
 - backup e restauração dependem do fornecedor;

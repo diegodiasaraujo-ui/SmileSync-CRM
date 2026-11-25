@@ -27,7 +27,8 @@ export function ActionLayer() {
   return action ? <ActionForm key={JSON.stringify(action)} action={action} /> : null;
 }
 function ActionForm({ action }: { action: Action }) {
-  const { data, update, close, notify, canFinance, record, open, authMode, command } = useDemo();
+  const { data, update, close, notify, canFinance, record, open, authMode, command, permissions } =
+    useDemo();
   const navigate = useNavigate();
   const [patientId, setPatientId] = useState(action.patientId || data.patients[0]?.id || "");
   const currentPatient = data.patients.find((patient) => patient.id === patientId);
@@ -296,9 +297,7 @@ function ActionForm({ action }: { action: Action }) {
         const saved = await persist("message.draft", { patientId, message });
         if (!saved) return;
       } else record(patientId, "Mensagem preparada para WhatsApp", message, "WhatsApp");
-      notify(
-        "Rascunho salvo. O envio real permanece desativado até a integração oficial ser configurada.",
-      );
+      notify("Rascunho salvo no histórico do paciente.");
     }
     if (action.kind === "treatment") {
       const steps = value("steps")
@@ -516,7 +515,12 @@ function ActionForm({ action }: { action: Action }) {
               <Select
                 label="Profissional"
                 name="professional"
-                defaultValue={currentAppointment?.professional || availableProfessionals[0] || ""}
+                defaultValue={
+                  currentAppointment?.professional ||
+                  (action.professional && availableProfessionals.includes(action.professional)
+                    ? action.professional
+                    : availableProfessionals[0] || "")
+                }
               >
                 {availableProfessionals.map((professional) => (
                   <option key={professional}>{professional}</option>
@@ -642,7 +646,26 @@ function ActionForm({ action }: { action: Action }) {
                   required
                 />
               </label>
-              <Badge>Envio real desativado</Badge>
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-secondary p-3">
+                <Badge>Rascunho · sem envio</Badge>
+                {authMode === "authenticated" &&
+                  permissions.includes("whatsapp.inbox.read") &&
+                  currentPatient && (
+                    <Button
+                      variant="ghost"
+                      className="text-primary"
+                      onClick={() => {
+                        close();
+                        navigate(
+                          `/app/whatsapp?${new URLSearchParams({ paciente: currentPatient.id })}`,
+                        );
+                      }}
+                    >
+                      Abrir conversa
+                      <ArrowRight size={14} />
+                    </Button>
+                  )}
+              </div>
             </>
           )}
           {action.kind === "note" && (

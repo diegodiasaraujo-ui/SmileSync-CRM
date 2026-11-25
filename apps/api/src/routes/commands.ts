@@ -1,6 +1,11 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import {
+  appointmentConflicts,
+  appointmentWithinHours,
+  lockAppointmentPatient,
+} from "../appointments.js";
 import { requireAuth, type AuthContext } from "../auth-context.js";
 import type { Database, DatabaseExecutor } from "../database.js";
 import { getBootstrap } from "./bootstrap.js";
@@ -296,9 +301,7 @@ function normalizePhone(input: string | undefined) {
 }
 
 function assertAppointmentHours(time: string, duration: number) {
-  const [hours = 0, minutes = 0] = time.split(":").map(Number);
-  const start = hours * 60 + minutes;
-  if (start < 8 * 60 || start + duration > 18 * 60)
+  if (!appointmentWithinHours(time, duration))
     throw new CommandError(
       400,
       "outside_business_hours",
@@ -457,43 +460,19 @@ async function assertNoAppointmentConflict(
   auth: AuthContext,
   input: {
     appointmentId?: string;
+    patientId: string;
     professionalId: string;
-    resourceId: string;
+    resourceId: string | null;
     date: string;
     time: string;
     duration: number;
   },
 ) {
-  const result = await database.query<{ id: string }>(
-    `
-      SELECT appointments.id
-      FROM appointments
-      JOIN clinics ON clinics.id = appointments.clinic_id
-      WHERE appointments.clinic_id = $1
-        AND appointments.deleted_at IS NULL
-        AND appointments.status <> 'cancelled'
-        AND appointments.id <> COALESCE($2::uuid, '00000000-0000-0000-0000-000000000000'::uuid)
-        AND (appointments.professional_id = $3 OR appointments.resource_id = $4)
-        AND appointments.starts_at <
-          ((($5::date + $6::time) + make_interval(mins => $7)) AT TIME ZONE clinics.timezone)
-        AND appointments.ends_at > (($5::date + $6::time) AT TIME ZONE clinics.timezone)
-      LIMIT 1
-    `,
-    [
-      auth.clinicId,
-      input.appointmentId ?? null,
-      input.professionalId,
-      input.resourceId,
-      input.date,
-      input.time,
-      input.duration,
-    ],
-  );
-  if (result.rows.length)
+  if (await appointmentConflicts(database, auth.clinicId, input))
     throw new CommandError(
       409,
       "appointment_conflict",
-      "Este horário conflita com outro atendimento do profissional ou da sala.",
+      "Este horário conflita com outro atendimento do paciente, do profissional ou da sala.",
     );
 }
 
@@ -714,6 +693,7 @@ async function executeCommand(
       );
       const payload = parsePayload(name, rawPayload);
       assertAppointmentHours(payload.time, payload.duration);
+      await lockAppointmentPatient(database, auth.clinicId, payload.patientId);
       await assertPatients(database, auth.clinicId, [payload.patientId]);
       const professionalId = await resolveProfessional(database, auth, payload.professional);
       const room = await resolveRoom(database, auth, payload.room);
@@ -739,6 +719,7 @@ async function executeCommand(
       }
       await assertNoAppointmentConflict(database, auth, {
         ...(payload.id ? { appointmentId: payload.id } : {}),
+        patientId: payload.patientId,
         professionalId,
         resourceId: room.id,
         date: payload.date,
@@ -852,7 +833,7 @@ async function executeCommand(
       const existing = await database.query<{
         patient_id: string;
         professional_id: string;
-        resource_id: string;
+        resource_id: string | null;
         duration: number;
       }>(
         `
@@ -867,8 +848,10 @@ async function executeCommand(
       if (!appointment)
         throw new CommandError(404, "appointment_not_found", "Consulta não encontrada.");
       assertAppointmentHours(payload.time, Number(appointment.duration));
+      await lockAppointmentPatient(database, auth.clinicId, appointment.patient_id);
       await assertNoAppointmentConflict(database, auth, {
         appointmentId: payload.appointmentId,
+        patientId: appointment.patient_id,
         professionalId: appointment.professional_id,
         resourceId: appointment.resource_id,
         date: payload.date,
@@ -918,13 +901,38 @@ async function executeCommand(
         patient_id: string;
         procedure_name: string;
         status: string;
+        professional_id: string;
+        resource_id: string | null;
+        date: string;
+        time: string;
+        duration: number;
       }>(
-        `SELECT patient_id, procedure_name, status FROM appointments WHERE clinic_id = $1 AND id = $2 AND deleted_at IS NULL`,
+        `
+          SELECT a.patient_id, a.procedure_name, a.status, a.professional_id, a.resource_id,
+                 to_char(a.starts_at AT TIME ZONE c.timezone, 'YYYY-MM-DD') AS date,
+                 to_char(a.starts_at AT TIME ZONE c.timezone, 'HH24:MI') AS time,
+                 EXTRACT(EPOCH FROM (a.ends_at - a.starts_at))::integer / 60 AS duration
+          FROM appointments a JOIN clinics c ON c.id = a.clinic_id
+          WHERE a.clinic_id = $1 AND a.id = $2 AND a.deleted_at IS NULL
+        `,
         [auth.clinicId, payload.appointmentId],
       );
       const appointment = existing.rows[0];
       if (!appointment)
         throw new CommandError(404, "appointment_not_found", "Consulta não encontrada.");
+      const releasedStatuses = ["cancelled", "no_show"];
+      if (releasedStatuses.includes(appointment.status) && !releasedStatuses.includes(status)) {
+        await lockAppointmentPatient(database, auth.clinicId, appointment.patient_id);
+        await assertNoAppointmentConflict(database, auth, {
+          appointmentId: payload.appointmentId,
+          patientId: appointment.patient_id,
+          professionalId: appointment.professional_id,
+          resourceId: appointment.resource_id,
+          date: appointment.date,
+          time: appointment.time,
+          duration: Number(appointment.duration),
+        });
+      }
       await database.query(
         `
           UPDATE appointments

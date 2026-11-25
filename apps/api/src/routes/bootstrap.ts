@@ -45,6 +45,7 @@ type Appointment = {
   professional: string;
   room: string;
   status: string;
+  source: "manual" | "whatsapp";
 };
 
 type Quote = {
@@ -147,6 +148,7 @@ type AppointmentRow = {
   professional: string;
   room: string | null;
   status: string;
+  source: "manual" | "whatsapp";
 };
 
 type QuoteRow = {
@@ -397,7 +399,8 @@ export async function getBootstrap(
                 AS duration_minutes,
               p.full_name AS professional,
               r.name AS room,
-              a.status
+              a.status,
+              a.source
             FROM appointments a
             JOIN clinics c ON c.id = a.clinic_id
             JOIN professionals p
@@ -604,6 +607,7 @@ export async function getBootstrap(
     professional: row.professional,
     room: row.room ?? "Sem sala",
     status: appointmentStatuses[row.status] ?? row.status,
+    source: row.source,
   }));
 
   const quotes: Quote[] = quoteResult.rows.map((row) => ({

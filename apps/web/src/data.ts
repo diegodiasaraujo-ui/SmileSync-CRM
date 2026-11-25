@@ -43,6 +43,7 @@ export type Appointment = {
   professional: string;
   room: string;
   status: string;
+  source?: "manual" | "whatsapp";
 };
 export type Quote = {
   id: string;

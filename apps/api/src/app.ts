@@ -9,6 +9,12 @@ import { createDatabase, migrateDatabase, type Database } from "./database.js";
 import { registerAuthRoutes } from "./routes/auth.js";
 import { registerBootstrapRoutes } from "./routes/bootstrap.js";
 import { registerCommandRoutes } from "./routes/commands.js";
+import {
+  registerWhatsAppRoutes,
+  omniWebhookPath,
+  whatsappWebhookPath,
+  type WhatsAppScheduler,
+} from "./routes/whatsapp.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -22,9 +28,15 @@ export type BuildAppOptions = {
   database?: Database;
   migrate?: boolean;
   logger?: boolean;
+  whatsappFetch?: typeof fetch;
+  whatsappScheduler?: WhatsAppScheduler;
 };
 
 const unsafeMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const isWhatsAppWebhook = (url: string) => {
+  const path = url.split("?", 1)[0];
+  return path === whatsappWebhookPath || path === omniWebhookPath;
+};
 
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const config = options.config ?? loadConfig();
@@ -33,7 +45,16 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   if (options.migrate ?? config.migrateOnStart) await migrateDatabase(database);
 
   const app = Fastify({
-    logger: options.logger ?? config.nodeEnv !== "test",
+    logger:
+      (options.logger ?? config.nodeEnv !== "test")
+        ? {
+            serializers: {
+              req(request) {
+                return { method: request.method, url: request.url.split("?", 1)[0] ?? "" };
+              },
+            },
+          }
+        : false,
     trustProxy: config.nodeEnv === "production",
     bodyLimit: 1_048_576,
     requestIdHeader: "x-request-id",
@@ -56,9 +77,11 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   });
 
   app.addHook("onRequest", async (request) => {
+    if (isWhatsAppWebhook(request.url)) return;
     await loadAuthContext(request, database, config);
   });
   app.addHook("onRequest", async (request, reply) => {
+    if (isWhatsAppWebhook(request.url)) return;
     if (!unsafeMethods.has(request.method)) return;
     if (!request.cookies[config.cookieName]) return;
     if (request.headers.origin === config.appOrigin) return;
@@ -75,12 +98,28 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await registerAuthRoutes(app, { database, config });
   await registerBootstrapRoutes(app, { database });
   await registerCommandRoutes(app, { database });
+  await registerWhatsAppRoutes(app, {
+    database,
+    config,
+    ...(options.whatsappFetch ? { fetcher: options.whatsappFetch } : {}),
+    ...(config.whatsapp?.schedulingEnabled
+      ? {
+          schedule:
+            options.whatsappScheduler ??
+            (await import("./whatsapp/scheduling.js")).processWhatsAppScheduling,
+        }
+      : {}),
+  });
 
   app.setNotFoundHandler(async (_request, reply) =>
     reply.code(404).send({ error: "not_found", message: "Rota não encontrada." }),
   );
   app.setErrorHandler(async (error, request, reply) => {
-    request.log.error({ error }, "request failed");
+    if (request.url.startsWith("/api/whatsapp/")) {
+      request.log.warn("WhatsApp request failed");
+    } else {
+      request.log.error({ error }, "request failed");
+    }
     const failure =
       error instanceof Error ? error : new Error("Falha desconhecida na solicitação.");
     const details = failure as Error & { statusCode?: number; code?: unknown };

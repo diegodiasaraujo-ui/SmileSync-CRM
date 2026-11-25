@@ -12,10 +12,11 @@ import {
   CircleAlert,
   Activity,
   ChevronRight,
+  RotateCw,
 } from "lucide-react";
 import { useDemo } from "./store";
 import { DEMO_DATE, activeAppointment, currency, longDate, shortDate } from "./data";
-import { Header, Button, Metric, Panel, Badge, Avatar, TextLink, IconButton, Empty } from "./ui";
+import { Button, Panel, Badge, Avatar, TextLink, IconButton, Empty } from "./ui";
 import { TREATMENTS_MODULE_LABEL } from "./moduleLabels";
 
 const professionalTitle = /^(?:dr|dra|doutor|doutora)\.?$/iu;
@@ -29,7 +30,7 @@ function greetingName(fullName: string) {
 }
 
 export function Dashboard() {
-  const { data, open, canFinance, patient } = useDemo();
+  const { data, open, canFinance, patient, permissions } = useDemo();
   const navigate = useNavigate();
   const accountFirstName = greetingName(data.account.name);
   const today = data.appointments
@@ -37,6 +38,8 @@ export function Dashboard() {
     .sort((first, second) => first.time.localeCompare(second.time));
   const waiting = today.filter((appointment) => appointment.status === "Aguardando confirmação");
   const upcoming = today.filter(activeAppointment);
+  const confirmed = today.filter((appointment) => appointment.status === "Confirmado").length;
+  const completed = today.filter((appointment) => appointment.status === "Concluído").length;
   const noReturn = data.treatments.filter(
     (treatment) =>
       !["Concluído", "Cancelado"].includes(treatment.status) &&
@@ -55,6 +58,58 @@ export function Dashboard() {
     (treatment) =>
       treatment.priority === "Alta" && !["Concluído", "Cancelado"].includes(treatment.status),
   );
+  const contact = (patientId: string) => {
+    if (permissions.includes("whatsapp.inbox.read")) {
+      navigate(`/app/whatsapp?paciente=${encodeURIComponent(patientId)}`);
+      return;
+    }
+    open({ kind: "message", patientId });
+  };
+  const metrics = [
+    {
+      label: "Consultas hoje",
+      value: today.length,
+      detail: `${completed} ${completed === 1 ? "atendimento concluído" : "atendimentos concluídos"}`,
+      Icon: CalendarDays,
+      iconClass: "bg-secondary text-primary",
+      path: "/app/agenda",
+    },
+    {
+      label: "Aguardando confirmação",
+      value: waiting.length,
+      detail: "Consultas deste dia",
+      Icon: Clock3,
+      iconClass: "bg-blue-50 text-primary",
+      path: "/app/agenda?status=Aguardando+confirmação",
+    },
+    {
+      label: "Retornos pendentes",
+      value: noReturn.length,
+      detail: "Sem próxima consulta ativa",
+      Icon: RotateCw,
+      iconClass: "bg-indigo-50 text-indigo-700",
+      path: "/app/tratamentos?filtro=sem-retorno",
+    },
+    canFinance
+      ? {
+          label: "A receber",
+          value: currency(receivable),
+          detail: `${overdue.length} ${overdue.length === 1 ? "parcela vencida" : "parcelas vencidas"}`,
+          Icon: Wallet,
+          iconClass: "bg-emerald-100 text-emerald-800",
+          path: "/app/financeiro",
+          finance: true,
+        }
+      : {
+          label: "Tratamentos ativos",
+          value: data.treatments.filter((item) => !["Concluído", "Cancelado"].includes(item.status))
+            .length,
+          detail: "Em acompanhamento",
+          Icon: Activity,
+          iconClass: "bg-secondary text-primary",
+          path: "/app/tratamentos",
+        },
+  ];
   const clinicalItems = [
     {
       count: waiting.length,
@@ -87,85 +142,88 @@ export function Dashboard() {
   ];
   return (
     <>
-      <Header
-        title={accountFirstName ? `Bom dia, ${accountFirstName}.` : "Bom dia!"}
-        subtitle={`${waiting.length} consultas aguardam confirmação. ${
-          noReturn.length
-            ? `${noReturn.length} tratamentos precisam de um retorno ativo.`
-            : `${priorities.length} tratamentos têm alta prioridade clínica.`
-        }`}
-      >
-        <span className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 text-xs text-muted-foreground">
-          <CalendarDays size={15} />
-          {longDate(DEMO_DATE)}
-        </span>
-      </Header>
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Button onClick={() => open({ kind: "patient" })}>
-          <UserRoundPlus size={16} />
-          Novo paciente
-        </Button>
-        <Button variant="secondary" onClick={() => open({ kind: "appointment" })}>
-          <CalendarPlus size={16} />
-          Novo agendamento
-        </Button>
-        {canFinance && (
-          <>
-            <Button variant="secondary" onClick={() => open({ kind: "quote" })}>
-              <FilePlus2 size={16} />
-              Novo orçamento
-            </Button>
-            <Button variant="ghost" onClick={() => open({ kind: "payment" })}>
-              <Wallet size={16} />
-              Registrar pagamento
-            </Button>
-          </>
-        )}
-      </div>
+      <section className="mb-5" aria-label="Visão geral da clínica">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="font-display text-[30px] font-extrabold leading-tight tracking-[-0.04em] sm:text-[35px]">
+              {accountFirstName ? `Olá, ${accountFirstName}.` : "Olá."}
+            </h1>
+            <p className="mt-1.5 text-[13px] text-muted-foreground">
+              {waiting.length || noReturn.length ? (
+                <>
+                  {waiting.length}{" "}
+                  {waiting.length === 1 ? "consulta aguarda" : "consultas aguardam"} confirmação.{" "}
+                  {noReturn.length}{" "}
+                  {noReturn.length === 1 ? "tratamento precisa" : "tratamentos precisam"} de
+                  retorno.
+                </>
+              ) : (
+                "Sua agenda e os indicadores da clínica em um só lugar."
+              )}
+            </p>
+          </div>
+          <span className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5 text-[12px] font-medium text-foreground">
+            <CalendarDays size={15} className="text-primary" />
+            {longDate(DEMO_DATE)}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+          <Button onClick={() => open({ kind: "patient" })}>
+            <UserRoundPlus size={16} />
+            Novo paciente
+          </Button>
+          <Button variant="secondary" onClick={() => open({ kind: "appointment" })}>
+            <CalendarPlus size={16} />
+            Novo agendamento
+          </Button>
+          {canFinance && (
+            <>
+              <Button variant="secondary" onClick={() => open({ kind: "quote" })}>
+                <FilePlus2 size={16} />
+                Novo orçamento
+              </Button>
+              <Button variant="secondary" onClick={() => open({ kind: "payment" })}>
+                <Wallet size={16} />
+                Registrar pagamento
+              </Button>
+            </>
+          )}
+        </div>
+      </section>
       <section
         aria-label="Indicadores de hoje"
-        className="mb-6 grid grid-cols-2 divide-x divide-border overflow-hidden rounded-xl border border-border bg-white lg:grid-cols-4"
+        className="mb-4 grid grid-cols-2 gap-3 xl:grid-cols-4"
       >
-        <Metric
-          label="Consultas hoje"
-          value={today.length}
-          detail={`${today.filter((appointment) => appointment.status === "Concluído").length} atendimento concluído`}
-          onClick={() => navigate("/app/agenda")}
-        />
-        <Metric
-          label="Aguardando confirmação"
-          value={waiting.length}
-          detail="Uma mensagem pode resolver"
-          attention={!!waiting.length}
-          onClick={() => navigate("/app/agenda?status=Aguardando+confirmação")}
-        />
-        <Metric
-          label="Retornos pendentes"
-          value={noReturn.length}
-          detail="Sem próxima consulta ativa"
-          onClick={() => navigate("/app/tratamentos?filtro=sem-retorno")}
-        />
-        {canFinance ? (
-          <Metric
-            label="A receber"
-            value={currency(receivable)}
-            detail={`${overdue.length} parcelas vencidas`}
-            onClick={() => navigate("/app/financeiro")}
-          />
-        ) : (
-          <Metric
-            label="Tratamentos ativos"
-            value={
-              data.treatments.filter(
-                (treatment) => !["Concluído", "Cancelado"].includes(treatment.status),
-              ).length
-            }
-            detail="Acompanhamento clínico"
-            onClick={() => navigate("/app/tratamentos")}
-          />
-        )}
+        {metrics.map(({ label, value, detail, Icon, iconClass, path, finance }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => navigate(path)}
+            className={`group relative flex min-w-0 flex-col gap-2.5 rounded-xl border border-border bg-white px-3 py-3.5 text-left shadow-panel transition-colors hover:border-primary/40 sm:flex-row sm:items-start sm:gap-3 sm:px-4 ${finance ? "dashboard-metric--finance" : ""}`}
+          >
+            <span className={`grid size-10 shrink-0 place-items-center rounded-full ${iconClass}`}>
+              <Icon size={19} strokeWidth={1.9} />
+            </span>
+            <span className="min-w-0">
+              <span className="block pr-3 text-[11px] font-semibold leading-snug sm:text-[12px]">
+                {label}
+              </span>
+              <strong className="mt-0.5 block font-display text-[clamp(1.22rem,2vw,1.7rem)] font-extrabold leading-tight tracking-[-0.04em] tabular-nums">
+                {value}
+              </strong>
+              <span className="mt-1 block text-[11px] leading-snug text-muted-foreground">
+                {detail}
+              </span>
+            </span>
+            <ArrowRight
+              size={14}
+              className="absolute right-2.5 top-3.5 -rotate-45 text-primary transition-transform group-hover:translate-x-0.5 sm:right-3"
+              aria-hidden="true"
+            />
+          </button>
+        ))}
       </section>
-      <div className="mb-6 grid gap-5 xl:grid-cols-[1.7fr_1fr]">
+      <div className="mb-6 grid items-start gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
         <Panel
           title="Próximos agendamentos"
           subtitle="Agenda do dia · horários e contexto em um só lugar"
@@ -176,7 +234,7 @@ export function Dashboard() {
               upcoming.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border px-5 py-4"
+                  className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5 transition-colors hover:bg-muted/40 sm:gap-x-4 sm:px-5"
                 >
                   <div className="w-12 text-sm font-semibold tabular-nums">
                     {appointment.time}
@@ -196,8 +254,7 @@ export function Dashboard() {
                       {appointment.procedure}
                     </span>
                     <span className="mt-1 block text-xs text-muted-foreground">
-                      {appointment.professional.replace(" Almeida", "").replace(" Moreira", "")} ·{" "}
-                      {appointment.room}
+                      {appointment.professional} · {appointment.room}
                     </span>
                   </button>
                   <div className="ml-auto flex items-center gap-2">
@@ -205,12 +262,7 @@ export function Dashboard() {
                     <IconButton
                       label={`WhatsApp de ${patient(appointment.patientId).name}`}
                       className="size-8"
-                      onClick={() =>
-                        open({
-                          kind: "message",
-                          patientId: appointment.patientId,
-                        })
-                      }
+                      onClick={() => contact(appointment.patientId)}
                     >
                       <MessageCircle size={17} />
                     </IconButton>
@@ -235,16 +287,20 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-2 bg-muted/50 px-5 py-3 text-xs text-muted-foreground">
             <CheckCircle2 size={14} className="text-primary" />
-            {today.filter((appointment) => appointment.status === "Confirmado").length} confirmados
-            · {waiting.length} aguardando confirmação
+            {confirmed} confirmados · {waiting.length} aguardando confirmação
           </div>
         </Panel>
         <div className="flex flex-col gap-5">
           <Panel title="Atenção hoje" subtitle="Pendências que merecem uma ação">
+            {clinicalItems.every((item) => !item.count) && (
+              <p className="border-t border-border px-5 py-4 text-sm text-muted-foreground">
+                Sem pendências para hoje.
+              </p>
+            )}
             {clinicalItems
               .filter((item) => item.count > 0)
               .map((item) => (
-                <div key={item.text} className="flex gap-3 border-t border-border px-5 py-4">
+                <div key={item.text} className="flex gap-3 border-t border-border px-5 py-3">
                   <span
                     className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${item.color}`}
                   >
@@ -256,7 +312,7 @@ export function Dashboard() {
                     </p>
                     <button
                       onClick={() => navigate(item.path)}
-                      className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                      className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
                     >
                       {item.action}
                       <ArrowRight size={13} />
@@ -265,7 +321,7 @@ export function Dashboard() {
                 </div>
               ))}
           </Panel>
-          <div className="rounded-xl bg-secondary px-5 py-4">
+          <div className="rounded-xl border border-border bg-white px-5 py-3.5 shadow-panel">
             <div className="mb-2 flex items-center gap-2 text-xs font-medium text-primary">
               <Clock3 size={15} />
               Ritmo da clínica
@@ -330,10 +386,7 @@ export function Dashboard() {
                 Última interação: {last ? shortDate(last.date) : "ainda não registrada"}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => open({ kind: "message", patientId: person.id })}
-                >
+                <Button variant="secondary" onClick={() => contact(person.id)}>
                   <MessageCircle size={15} />
                   WhatsApp
                 </Button>

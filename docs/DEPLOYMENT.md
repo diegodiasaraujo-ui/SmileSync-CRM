@@ -155,7 +155,7 @@ Selecionar provedor, configurar domínio/remetente, templates, bounce e rate lim
 
 ### WhatsApp
 
-Ativar somente com conta oficial, consentimento, modelos aprovados, segredos no cofre e webhook assinado. Começar em número/ambiente de teste, com dados fictícios. Custos são variáveis e precisam ser confirmados no momento da contratação.
+Siga o [guia de configuração do WhatsApp](WHATSAPP.md) para publicar frontend e API na mesma origem, conectar a Cloud API, registrar o webhook e configurar o agendamento. Faça o primeiro ensaio com o número de teste da Meta e dados fictícios.
 
 ### Documentos clínicos
 

@@ -1,0 +1,59 @@
+.workspace-sidebar {
+  background: linear-gradient(180deg, #0b2a5c 0%, #081d43 100%);
+  border-right: 1px solid #183968;
+}
+
+.workspace-nav-item[aria-current="page"] {
+  box-shadow: 0 1px 2px rgb(3 12 33 / 25%);
+}
+
+.brand-symbol {
+  position: relative;
+  display: inline-grid;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  color: #174bdb;
+}
+
+.brand-symbol::before,
+.brand-symbol::after {
+  content: "";
+  width: 23px;
+  height: 9px;
+  background: currentColor;
+  border-radius: 9px 0 9px 0;
+  transform: skewX(-14deg);
+}
+
+.brand-symbol::before {
+  margin-left: 6px;
+}
+.brand-symbol::after {
+  margin-right: 6px;
+}
+.brand-inverse .brand-symbol {
+  color: #fff;
+}
+
+.auth-screen {
+  background: radial-gradient(ellipse at 18% 88%, #123a78 0%, transparent 47%), #081c42;
+}
+
+.auth-decoration {
+  border: 1px solid rgb(111 163 246 / 24%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 30px rgb(111 163 246 / 5%),
+    0 0 0 65px rgb(111 163 246 / 4%);
+  width: 58rem;
+  height: 45rem;
+  transform: rotate(-21deg);
+  bottom: -34rem;
+  left: -15rem;
+}
+
+.dashboard-metric--finance {
+  background: linear-gradient(118deg, #ffffff, #f0faf7);
+  border-color: #cfe9e1;
+}

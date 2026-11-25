@@ -19,6 +19,7 @@ export type Action = {
   appointmentId?: string;
   date?: string;
   time?: string;
+  professional?: string;
   text?: string;
 };
 
@@ -53,6 +54,7 @@ type Store = {
   patient: (id: string) => Patient;
   loading: boolean;
   storageError: boolean;
+  refreshData: (signal: AbortSignal) => void;
   retryStorage: () => void;
   record: (patientId: string, title: string, text: string, kind?: string) => void;
 };
@@ -222,6 +224,24 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     [authMode],
   );
 
+  const refreshData = useCallback(
+    (signal: AbortSignal) => {
+      if (authMode !== "authenticated") return;
+      commandChain.current = commandChain.current
+        .then(async () => {
+          if (signal.aborted) return;
+          const { data: nextData } = await api.bootstrap(signal);
+          if (signal.aborted) return;
+          setData(nextData);
+          setStorageError(false);
+        })
+        .catch(() => {
+          if (!signal.aborted) setStorageError(true);
+        });
+    },
+    [authMode],
+  );
+
   const role = session?.role || demoRole;
   const permissions = session?.permissions || [];
   const canFinance =
@@ -289,6 +309,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         unavailablePatient,
       loading: authMode === "loading",
       storageError,
+      refreshData,
       retryStorage: () => {
         if (authMode !== "authenticated") {
           setStorageError(false);
@@ -322,6 +343,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       notify,
       permissions,
       record,
+      refreshData,
       register,
       requestPasswordReset,
       role,

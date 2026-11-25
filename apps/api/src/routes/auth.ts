@@ -76,6 +76,8 @@ const rolePermissions: Record<(typeof roles)[number]["code"], string[]> = {
     "clinic.settings.update",
     "integrations.read",
     "integrations.update",
+    "whatsapp.inbox.read",
+    "whatsapp.inbox.send",
     "automations.read",
     "automations.update",
     "reports.operational.export",

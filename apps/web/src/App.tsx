@@ -107,6 +107,12 @@ const router = createBrowserRouter([
         }),
       },
       {
+        path: "whatsapp",
+        lazy: async () => ({
+          Component: (await import("./WhatsApp")).WhatsApp,
+        }),
+      },
+      {
         path: "automacoes",
         element: <Navigate to="/app/configuracoes?secao=Automações" replace />,
       },

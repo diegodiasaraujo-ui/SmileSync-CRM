@@ -21,6 +21,12 @@ import {
   CheckCircle2,
   MoreHorizontal,
   CircleAlert,
+  CalendarClock,
+  ClipboardList,
+  FileCheck2,
+  FileText,
+  HeartPulse,
+  Wallet,
 } from "lucide-react";
 import { useDemo } from "./store";
 import {
@@ -57,6 +63,7 @@ import {
 } from "./ui";
 import { ReportButton } from "./Reports";
 import { FINANCE_MODULE_LABEL, TREATMENTS_MODULE_LABEL } from "./moduleLabels";
+import { ModuleHeader, ModuleMetrics, ModuleToolbar } from "./ModuleSurface";
 
 function useOperationalParams() {
   const [params, routerSetParams] = useSearchParams();
@@ -83,7 +90,18 @@ function useSavedFilter(
 }
 
 export function Agenda() {
-  const { data, open, patient, update, notify, authMode, command } = useDemo();
+  const { data, open, patient, update, notify, authMode, command, refreshData } = useDemo();
+  useEffect(() => {
+    if (authMode !== "authenticated") return;
+    const controller = new AbortController();
+    const reloadSchedule = () => refreshData(controller.signal);
+    reloadSchedule();
+    window.addEventListener("focus", reloadSchedule);
+    return () => {
+      controller.abort();
+      window.removeEventListener("focus", reloadSchedule);
+    };
+  }, [authMode, refreshData]);
   const availableProfessionals = professionalNames(data);
   const [params, setParams] = useOperationalParams();
   const date = params.get("data") || DEMO_DATE;
@@ -102,10 +120,6 @@ export function Agenda() {
   } | null>(null);
   const [drag, setDrag] = useState("");
   const [mobileFilters, setMobileFilters] = useState(false);
-  const agendaColumns =
-    availableProfessionals.length > 1
-      ? [...availableProfessionals.slice(0, 2), "Sala 03"]
-      : [availableProfessionals[0] || "Profissional", "Sala 02", "Sala 03"];
   const setParam = (key: string, value: string) =>
     setParams((previous) => {
       const next = new URLSearchParams(previous);
@@ -136,11 +150,24 @@ export function Agenda() {
     appointment.status,
   ]);
   const displayDate = `${date === DEMO_DATE ? "Hoje · " : ""}${longDate(date)}`;
+  const periodAppointments = data.appointments.filter((appointment) =>
+    days.includes(appointment.date),
+  );
+  const agendaProfessionals = [
+    ...new Set(
+      [
+        professional || null,
+        ...(professional ? [] : availableProfessionals),
+        ...filtered.map((item) => item.professional),
+      ].filter((name): name is string => Boolean(name)),
+    ),
+  ];
+  const agendaColumns = view === "Dia" ? Math.max(1, agendaProfessionals.length) : days.length;
   return (
     <>
-      <Header
+      <ModuleHeader
         title="Agenda"
-        subtitle={`${filtered.length} agendamentos no período selecionado. Organize cada atendimento sem perder o contexto.`}
+        description="Gerencie horários, profissionais e a confirmação de cada atendimento."
       >
         <ReportButton
           module="Agenda"
@@ -159,119 +186,159 @@ export function Agenda() {
           <Plus size={16} />
           Novo agendamento
         </Button>
-      </Header>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <IconButton
-            label="Período anterior"
-            onClick={() => setParam("data", addDays(date, -days.length))}
-          >
-            <ChevronLeft size={18} />
-          </IconButton>
-          <label className="relative flex min-h-10 items-center gap-2 rounded-lg border border-border bg-white px-3 text-xs font-medium focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-            <CalendarDays size={16} />
-            <span className="hidden capitalize sm:inline">{displayDate}</span>
-            <span className="sm:hidden">
-              {date === DEMO_DATE ? "Hoje · " : ""}
-              {shortDate(date)}
-            </span>
-            <input
-              aria-label="Selecionar data da agenda"
-              type="date"
-              value={date}
-              onChange={(event) => event.target.value && setParam("data", event.target.value)}
-              className="absolute inset-0 cursor-pointer opacity-0"
-            />
-          </label>
-          <IconButton
-            label="Próximo período"
-            onClick={() => setParam("data", addDays(date, days.length))}
-          >
-            <ChevronRight size={18} />
-          </IconButton>
-          <Button
-            variant="ghost"
-            className="hidden sm:inline-flex"
-            onClick={() => setParam("data", DEMO_DATE)}
-          >
-            Hoje
-          </Button>
-        </div>
-        <div className="flex rounded-lg border border-border bg-white p-1">
-          {["Dia", "3 dias", "Semana"].map((item) => (
-            <button
-              key={item}
-              onClick={() => setParam("visao", item)}
-              aria-pressed={view === item}
-              className={`rounded-md px-3 py-2 text-xs font-medium ${
-                view === item ? "bg-secondary text-primary" : "text-muted-foreground"
-              }`}
+      </ModuleHeader>
+      <ModuleMetrics
+        items={[
+          {
+            label: "Agendamentos",
+            value: periodAppointments.length,
+            detail: "No período selecionado",
+            icon: CalendarDays,
+            onClick: () => setParam("status", ""),
+          },
+          {
+            label: "Confirmados",
+            value: periodAppointments.filter((item) => item.status === "Confirmado").length,
+            detail: "Presença confirmada",
+            icon: CheckCircle2,
+            tone: "green",
+            onClick: () => setParam("status", "Confirmado"),
+          },
+          {
+            label: "Aguardando confirmação",
+            value: periodAppointments.filter((item) => item.status === "Aguardando confirmação")
+              .length,
+            detail: "Pendentes de resposta",
+            icon: CalendarClock,
+            tone: "amber",
+            onClick: () => setParam("status", "Aguardando confirmação"),
+          },
+          {
+            label: "Via WhatsApp",
+            value: periodAppointments.filter((item) => item.source === "whatsapp").length,
+            detail: "Origem registrada na agenda",
+            icon: MessageCircle,
+          },
+        ]}
+      />
+      <ModuleToolbar label="Período e filtros da agenda">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <IconButton
+              label="Período anterior"
+              onClick={() => setParam("data", addDays(date, -days.length))}
             >
-              {item}
-            </button>
-          ))}
+              <ChevronLeft size={18} />
+            </IconButton>
+            <label className="relative flex min-h-10 items-center gap-2 rounded-lg border border-border bg-white px-3 text-xs font-medium focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+              <CalendarDays size={16} />
+              <span className="hidden capitalize sm:inline">{displayDate}</span>
+              <span className="sm:hidden">
+                {date === DEMO_DATE ? "Hoje · " : ""}
+                {shortDate(date)}
+              </span>
+              <input
+                aria-label="Selecionar data da agenda"
+                type="date"
+                value={date}
+                onChange={(event) => event.target.value && setParam("data", event.target.value)}
+                className="absolute inset-0 cursor-pointer opacity-0"
+              />
+            </label>
+            <IconButton
+              label="Próximo período"
+              onClick={() => setParam("data", addDays(date, days.length))}
+            >
+              <ChevronRight size={18} />
+            </IconButton>
+            <Button
+              variant="ghost"
+              className="hidden sm:inline-flex"
+              onClick={() => setParam("data", DEMO_DATE)}
+            >
+              Hoje
+            </Button>
+          </div>
+          <div className="flex rounded-lg border border-border bg-white p-1">
+            {["Dia", "3 dias", "Semana"].map((item) => (
+              <button
+                key={item}
+                onClick={() => setParam("visao", item)}
+                aria-pressed={view === item}
+                className={`rounded-md px-3 py-2 text-xs font-medium ${
+                  view === item ? "bg-secondary text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <Button
-        variant="secondary"
-        className="mb-4 sm:hidden"
-        aria-expanded={mobileFilters}
-        onClick={() => setMobileFilters(!mobileFilters)}
+        <Button
+          variant="secondary"
+          className="mt-3 sm:hidden"
+          aria-expanded={mobileFilters}
+          onClick={() => setMobileFilters(!mobileFilters)}
+        >
+          {mobileFilters ? "Ocultar filtros" : "Filtrar agenda"}
+        </Button>
+        <div
+          className={`mt-3 gap-3 border-t border-border pt-3 sm:grid sm:grid-cols-2 xl:grid-cols-4 ${
+            mobileFilters ? "grid" : "hidden"
+          }`}
+        >
+          <Select
+            label="Profissional"
+            value={professional}
+            onChange={(event) => setProfessional(event.target.value)}
+          >
+            <option value="">Todos os profissionais</option>
+            {availableProfessionals.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </Select>
+          <Select label="Sala" value={room} onChange={(event) => setRoom(event.target.value)}>
+            <option value="">Todas as salas</option>
+            {["Sala 01", "Sala 02", "Sala 03"].map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </Select>
+          <Select
+            label="Procedimento"
+            value={procedure}
+            onChange={(event) => setProcedure(event.target.value)}
+          >
+            <option value="">Todos os procedimentos</option>
+            {Array.from(new Set(data.appointments.map((item) => item.procedure))).map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </Select>
+          <Select
+            label="Status"
+            value={status}
+            onChange={(event) => setParam("status", event.target.value)}
+          >
+            <option value="">Todos os status</option>
+            {[
+              "Confirmado",
+              "Aguardando confirmação",
+              "Em atendimento",
+              "Concluído",
+              "Faltou",
+              "Encaixe",
+              "Cancelado",
+              "Remarcado",
+            ].map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </Select>
+        </div>
+      </ModuleToolbar>
+      <Panel
+        title="Atendimentos do período"
+        subtitle={`${filtered.length} na visualização atual`}
+        className="sm:hidden"
       >
-        {mobileFilters ? "Ocultar filtros" : "Filtrar agenda"}
-      </Button>
-      <div
-        className={`mb-5 gap-3 sm:grid sm:grid-cols-2 xl:grid-cols-4 ${
-          mobileFilters ? "grid" : "hidden"
-        }`}
-      >
-        <Select
-          label="Profissional"
-          value={professional}
-          onChange={(event) => setProfessional(event.target.value)}
-        >
-          <option value="">Todos os profissionais</option>
-          {availableProfessionals.map((item) => (
-            <option key={item}>{item}</option>
-          ))}
-        </Select>
-        <Select label="Sala" value={room} onChange={(event) => setRoom(event.target.value)}>
-          <option value="">Todas as salas</option>
-          {["Sala 01", "Sala 02", "Sala 03"].map((item) => (
-            <option key={item}>{item}</option>
-          ))}
-        </Select>
-        <Select
-          label="Procedimento"
-          value={procedure}
-          onChange={(event) => setProcedure(event.target.value)}
-        >
-          <option value="">Todos os procedimentos</option>
-          {Array.from(new Set(data.appointments.map((item) => item.procedure))).map((item) => (
-            <option key={item}>{item}</option>
-          ))}
-        </Select>
-        <Select
-          label="Status"
-          value={status}
-          onChange={(event) => setParam("status", event.target.value)}
-        >
-          <option value="">Todos os status</option>
-          {[
-            "Confirmado",
-            "Aguardando confirmação",
-            "Em atendimento",
-            "Concluído",
-            "Faltou",
-            "Encaixe",
-            "Cancelado",
-            "Remarcado",
-          ].map((item) => (
-            <option key={item}>{item}</option>
-          ))}
-        </Select>
-      </div>
-      <Panel className="sm:hidden">
         {days.map((day) => (
           <section key={day}>
             <h2 className="border-b border-border bg-muted px-4 py-3 text-sm font-medium">
@@ -316,23 +383,26 @@ export function Agenda() {
           </section>
         ))}
       </Panel>
-      <Panel className="hidden sm:block">
+      <Panel
+        title="Grade de horários"
+        subtitle={`${filtered.length} na visualização atual`}
+        className="hidden sm:block"
+      >
         <div className="overflow-x-auto">
           <div
-            className={`grid divide-x divide-border ${
-              days.length > 1 ? "min-w-[750px]" : "min-w-[650px]"
-            }`}
+            className="grid divide-x divide-border"
             style={{
-              gridTemplateColumns: `64px repeat(${
-                days.length === 1 ? 3 : days.length
-              }, minmax(0, 1fr))`,
+              gridTemplateColumns: `64px repeat(${agendaColumns}, minmax(155px, 1fr))`,
+              minWidth: 64 + agendaColumns * 155,
             }}
           >
-            <div className="border-b border-border bg-muted/60 px-2 py-4 text-[11px] text-muted-foreground">
+            <div className="border-y border-border bg-muted/60 px-2 py-4 text-[11px] text-muted-foreground">
               Horário
             </div>
             {(days.length === 1
-              ? agendaColumns
+              ? agendaProfessionals.length
+                ? agendaProfessionals
+                : ["Atendimentos"]
               : days.map(
                   (item) =>
                     `${shortDate(item)} · ${new Date(`${item}T12:00`).toLocaleDateString("pt-BR", { weekday: "short" })}`,
@@ -340,7 +410,7 @@ export function Agenda() {
             ).map((item) => (
               <div
                 key={item}
-                className="border-b border-border bg-muted/60 px-3 py-4 text-xs font-medium"
+                className="border-y border-border bg-muted/60 px-3 py-4 text-xs font-semibold"
               >
                 {item}
               </div>
@@ -354,17 +424,12 @@ export function Agenda() {
                   <div className="flex min-h-[66px] items-start justify-center border-b border-border/60 pt-2 text-[11px] tabular-nums text-muted-foreground">
                     {time}
                   </div>
-                  {Array.from({ length: days.length === 1 ? 3 : days.length }, (_, column) => {
+                  {Array.from({ length: agendaColumns }, (_, column) => {
                     const targetDate = days.length === 1 ? date : days[column];
                     const cellAppointments = filtered.filter(
                       (item) =>
                         item.date === targetDate &&
-                        (days.length > 1 ||
-                          (item.professional === availableProfessionals[0]
-                            ? item.room === "Sala 03"
-                              ? 2
-                              : 0
-                            : 1) === column) &&
+                        (days.length > 1 || item.professional === agendaProfessionals[column]) &&
                         item.time.slice(0, 2) === time.slice(0, 2) &&
                         Math.floor(Number(item.time.slice(3, 5)) / 30) ===
                           Math.floor(Number(time.slice(3, 5)) / 30),
@@ -427,6 +492,9 @@ export function Agenda() {
                                 kind: "appointment",
                                 date: targetDate,
                                 time,
+                                ...(days.length === 1 && agendaProfessionals[column]
+                                  ? { professional: agendaProfessionals[column] }
+                                  : {}),
                               })
                             }
                           >
@@ -628,7 +696,10 @@ function AppointmentDrawer({
           <p className="mt-1 text-sm text-muted-foreground">{appointment.procedure}</p>
         </div>
       </div>
-      <Badge>{appointment.status}</Badge>
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge>{appointment.status}</Badge>
+        {appointment.source === "whatsapp" && <Badge>Origem WhatsApp</Badge>}
+      </div>
       <dl className="my-6 grid grid-cols-2 gap-5 text-sm">
         {[
           ["Data", shortDate(appointment.date)],
@@ -805,9 +876,9 @@ export function Treatments({ patientId }: { patientId?: string }) {
   return (
     <>
       {!patientId && (
-        <Header
+        <ModuleHeader
           title={TREATMENTS_MODULE_LABEL}
-          subtitle="Etapas, continuidade clínica e próxima ação de cada paciente."
+          description="Acompanhe etapas e organize a próxima ação de cada paciente."
         >
           <ReportButton
             module={TREATMENTS_MODULE_LABEL}
@@ -824,9 +895,48 @@ export function Treatments({ patientId }: { patientId?: string }) {
             <Plus size={16} />
             Novo tratamento
           </Button>
-        </Header>
+        </ModuleHeader>
       )}
-      <div className="mb-4 flex flex-wrap items-end gap-3">
+      {!patientId && (
+        <ModuleMetrics
+          items={[
+            {
+              label: "Tratamentos",
+              value: data.treatments.length,
+              detail: "Registrados na clínica",
+              icon: ClipboardList,
+              onClick: () => setStatus(""),
+            },
+            {
+              label: "Em andamento",
+              value: data.treatments.filter((item) => item.status === "Em andamento").length,
+              detail: "Em acompanhamento clínico",
+              icon: HeartPulse,
+              onClick: () => setStatus("Em andamento"),
+            },
+            {
+              label: "Aguardando retorno",
+              value: data.treatments.filter((item) => item.status === "Aguardando retorno").length,
+              detail: "Precisam de acompanhamento",
+              icon: CalendarClock,
+              tone: "amber",
+              onClick: () => setStatus("Aguardando retorno"),
+            },
+            {
+              label: "Concluídos",
+              value: data.treatments.filter((item) => item.status === "Concluído").length,
+              detail: "Tratamentos finalizados",
+              icon: CheckCircle2,
+              tone: "green",
+              onClick: () => setStatus("Concluído"),
+            },
+          ]}
+        />
+      )}
+      <ModuleToolbar
+        label="Busca e filtros de tratamentos"
+        className="flex flex-wrap items-end gap-3"
+      >
         <div className="min-w-48 flex-1">
           <Field
             label="Buscar tratamento ou paciente"
@@ -867,7 +977,7 @@ export function Treatments({ patientId }: { patientId?: string }) {
             Adicionar
           </Button>
         )}
-      </div>
+      </ModuleToolbar>
       {params.get("filtro") && (
         <Button
           variant="ghost"
@@ -882,7 +992,11 @@ export function Treatments({ patientId }: { patientId?: string }) {
           Sem retorno ativo · Limpar filtro ×
         </Button>
       )}
-      <Panel>
+      <Panel
+        title="Plano de tratamentos"
+        subtitle={`${list.length} na visualização atual`}
+        className="module-table"
+      >
         {list.length ? (
           <Table
             headers={[
@@ -897,7 +1011,7 @@ export function Treatments({ patientId }: { patientId?: string }) {
           >
             {list.map((treatment) => (
               <tr key={treatment.id}>
-                <td>
+                <td data-primary-cell>
                   <button
                     className="text-left"
                     onClick={() =>
@@ -914,7 +1028,7 @@ export function Treatments({ patientId }: { patientId?: string }) {
                     </small>
                   </button>
                 </td>
-                <td className="text-xs">
+                <td data-label="Profissional" className="text-xs">
                   {treatment.professional}
                   <div className="mt-1">
                     <Badge>{treatment.priority} prioridade</Badge>
@@ -922,33 +1036,33 @@ export function Treatments({ patientId }: { patientId?: string }) {
                 </td>
                 {canFinance && (
                   <>
-                    <td className="tabular-nums">
+                    <td data-label="Contratado / pago" className="tabular-nums">
                       {currency(treatment.total)}
                       <small className="mt-1 block text-xs text-muted-foreground">
                         {currency(paid(treatment.id))} pagos
                       </small>
                     </td>
-                    <td className="tabular-nums">
+                    <td data-label="Em aberto" className="tabular-nums">
                       {currency(treatment.total - paid(treatment.id))}
                     </td>
                   </>
                 )}
-                <td>
+                <td data-label="Etapas">
                   <Progress
                     done={treatment.steps.filter((step) => step.done).length}
                     total={treatment.steps.length}
                   />
                 </td>
-                <td className="text-xs">
+                <td data-label="Próxima etapa" className="text-xs">
                   {treatment.steps.find((step) => !step.done)?.name || "Todas concluídas"}
                   <small className="mt-1 block text-muted-foreground">
                     {shortDate(treatment.steps.find((step) => !step.done)?.date || "")}
                   </small>
                 </td>
-                <td>
+                <td data-label="Status">
                   <Badge>{treatment.status}</Badge>
                 </td>
-                <td>
+                <td data-row-actions>
                   <IconButton
                     label="Abrir tratamento"
                     onClick={() =>
@@ -1462,9 +1576,9 @@ export function Quotes({ patientId }: { patientId?: string }) {
   return (
     <>
       {!patientId && (
-        <Header
+        <ModuleHeader
           title="Orçamentos"
-          subtitle="Da proposta ao tratamento, sem perder o contexto do paciente."
+          description="Acompanhe propostas, aprovações e conversões em tratamento."
         >
           <ReportButton
             module="Orçamentos"
@@ -1481,10 +1595,58 @@ export function Quotes({ patientId }: { patientId?: string }) {
             <Plus size={16} />
             Novo orçamento
           </Button>
-        </Header>
+        </ModuleHeader>
       )}
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <Select label="Status" value={status} onChange={(event) => setStatus(event.target.value)}>
+      {!patientId && (
+        <ModuleMetrics
+          items={[
+            {
+              label: "Orçamentos",
+              value: data.quotes.length,
+              detail: "Propostas registradas",
+              icon: FileText,
+              onClick: () => setStatus(""),
+            },
+            {
+              label: "Enviados",
+              value: data.quotes.filter((item) => item.status === "Enviado").length,
+              detail: "Com status enviado",
+              icon: ArrowRight,
+              onClick: () => setStatus("Enviado"),
+            },
+            {
+              label: "Aprovados",
+              value: data.quotes.filter((item) => item.status === "Aprovado").length,
+              detail: "Propostas aceitas",
+              icon: FileCheck2,
+              tone: "green",
+              onClick: () => setStatus("Aprovado"),
+            },
+            {
+              label: "Valor aprovado",
+              value: currency(
+                data.quotes.reduce(
+                  (sum, item) =>
+                    item.status === "Aprovado" ? sum + item.value - item.discount : sum,
+                  0,
+                ),
+              ),
+              detail: "Total depois dos descontos",
+              icon: Wallet,
+              tone: "green",
+            },
+          ]}
+        />
+      )}
+      <ModuleToolbar
+        label="Filtros de orçamentos"
+        className="flex flex-wrap items-end justify-between gap-3"
+      >
+        <Select
+          label="Status da proposta"
+          value={status}
+          onChange={(event) => setStatus(event.target.value)}
+        >
           <option value="">Todos os orçamentos</option>
           {["Rascunho", "Enviado", "Visualizado", "Aprovado", "Recusado", "Expirado"].map(
             (item) => (
@@ -1498,8 +1660,12 @@ export function Quotes({ patientId }: { patientId?: string }) {
             Criar orçamento
           </Button>
         )}
-      </div>
-      <Panel>
+      </ModuleToolbar>
+      <Panel
+        title="Propostas de orçamento"
+        subtitle={`${rows.length} na visualização atual`}
+        className="module-table"
+      >
         {rows.length ? (
           <Table
             headers={[
@@ -1515,7 +1681,7 @@ export function Quotes({ patientId }: { patientId?: string }) {
           >
             {rows.map((item) => (
               <tr key={item.id}>
-                <td>
+                <td data-primary-cell>
                   <button className="text-left" onClick={() => setSelected(item.id)}>
                     <span className="font-medium">{patient(item.patientId).name}</span>
                     <small className="mt-1 block text-xs text-muted-foreground">
@@ -1523,20 +1689,22 @@ export function Quotes({ patientId }: { patientId?: string }) {
                     </small>
                   </button>
                 </td>
-                <td>{currency(item.value)}</td>
-                <td>{currency(item.discount)}</td>
-                <td className="font-medium">{currency(item.value - item.discount)}</td>
-                <td>{shortDate(item.validity)}</td>
-                <td className="text-xs text-muted-foreground">
+                <td data-label="Valor">{currency(item.value)}</td>
+                <td data-label="Desconto">{currency(item.discount)}</td>
+                <td data-label="Valor final" className="font-medium">
+                  {currency(item.value - item.discount)}
+                </td>
+                <td data-label="Validade">{shortDate(item.validity)}</td>
+                <td data-label="Enviado / aprovado" className="text-xs text-muted-foreground">
                   {item.sent ? shortDate(item.sent) : "Não enviado"}
                   <small className="mt-1 block">
                     {item.approved ? shortDate(item.approved) : "Não aprovado"}
                   </small>
                 </td>
-                <td>
+                <td data-label="Status">
                   <Badge>{item.status}</Badge>
                 </td>
-                <td>
+                <td data-row-actions>
                   <Button variant="ghost" onClick={() => setSelected(item.id)}>
                     Detalhes
                     <ChevronRight size={14} />
@@ -1628,6 +1796,7 @@ export function Quotes({ patientId }: { patientId?: string }) {
 export function Finance({ patientId }: { patientId?: string }) {
   const { data, canFinance, patient, open, update, notify, authMode, command } = useDemo();
   const navigate = useNavigate();
+  const location = useLocation();
   const [params, setParams] = useOperationalParams();
   const [tab, setTab] = useSavedFilter(params, setParams, "finance-tab", "Todos");
   const [start, setStart] = useSavedFilter(params, setParams, "de", `${DEMO_DATE.slice(0, 8)}01`);
@@ -1667,9 +1836,9 @@ export function Finance({ patientId }: { patientId?: string }) {
   return (
     <>
       {!patientId && (
-        <Header
+        <ModuleHeader
           title={FINANCE_MODULE_LABEL}
-          subtitle="Recebimentos, parcelas e cobranças conectados ao paciente."
+          description="Controle o que entrou, o que vence e o saldo em aberto por paciente."
         >
           <ReportButton
             module={FINANCE_MODULE_LABEL}
@@ -1687,9 +1856,49 @@ export function Finance({ patientId }: { patientId?: string }) {
             <Plus size={16} />
             Registrar pagamento
           </Button>
-        </Header>
+        </ModuleHeader>
       )}
-      <div className="mb-5 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-end">
+      <ModuleMetrics
+        items={[
+          {
+            label: "Previsto no período",
+            value: currency(sum(inPeriod)),
+            detail: "Total das parcelas no intervalo",
+            icon: ClipboardList,
+            onClick: () => setTab("Todos"),
+          },
+          {
+            label: "Recebido",
+            value: currency(sum(inPeriod.filter((charge) => charge.paid))),
+            detail: "Pagamentos confirmados",
+            icon: CheckCircle2,
+            tone: "green",
+            onClick: () => setTab("Recebidos"),
+          },
+          {
+            label: "A receber",
+            value: currency(sum(inPeriod.filter((charge) => !charge.paid))),
+            detail: "Parcelas em aberto no intervalo",
+            icon: Wallet,
+            tone: "amber",
+            onClick: () => setTab("A receber"),
+          },
+          {
+            label: "Vencido",
+            value: currency(
+              sum(inPeriod.filter((charge) => !charge.paid && charge.due < DEMO_DATE)),
+            ),
+            detail: "Requer contato com o paciente",
+            icon: CircleAlert,
+            tone: "red",
+            onClick: () => setTab("Vencidos"),
+          },
+        ]}
+      />
+      <ModuleToolbar
+        label="Período e filtros financeiros"
+        className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-end"
+      >
         <Field
           label="De"
           type="date"
@@ -1741,39 +1950,20 @@ export function Finance({ patientId }: { patientId?: string }) {
             <option key={status}>{status}</option>
           ))}
         </Select>
-        <Button variant="secondary" onClick={() => setPlan(true)}>
+        <Button variant="secondary" className="col-span-2" onClick={() => setPlan(true)}>
           Criar plano de pagamento
         </Button>
-      </div>
-      <div className="mb-6 grid grid-cols-2 divide-x divide-border overflow-hidden rounded-xl border border-border bg-white xl:grid-cols-4">
-        <Metric
-          label="Previsto no período"
-          value={currency(sum(inPeriod))}
-          detail="Total das parcelas no intervalo"
-        />
-        <Metric
-          label="Recebido"
-          value={currency(sum(inPeriod.filter((charge) => charge.paid)))}
-          detail="Pagamentos confirmados"
-        />
-        <Metric
-          label="A receber"
-          value={currency(sum(inPeriod.filter((charge) => !charge.paid)))}
-          detail="Parcelas em aberto no período"
-        />
-        <Metric
-          label="Vencido"
-          value={currency(sum(inPeriod.filter((charge) => !charge.paid && charge.due < DEMO_DATE)))}
-          detail="Requer contato com o paciente"
-          attention
-        />
-      </div>
+      </ModuleToolbar>
       <Tabs
         tabs={["Todos", "A receber", "Vencidos", "Recebidos"]}
         selected={tab}
         onChange={setTab}
       />
-      <Panel>
+      <Panel
+        title="Movimentações"
+        subtitle={`${filtered.length} no período e filtros selecionados`}
+        className="module-table"
+      >
         {filtered.length ? (
           <Table
             headers={[
@@ -1789,7 +1979,7 @@ export function Finance({ patientId }: { patientId?: string }) {
           >
             {filtered.map((charge) => (
               <tr key={charge.id}>
-                <td>
+                <td data-primary-cell>
                   <button
                     className="text-left"
                     onClick={() =>
@@ -1808,22 +1998,26 @@ export function Finance({ patientId }: { patientId?: string }) {
                     </small>
                   </button>
                 </td>
-                <td>{charge.title}</td>
-                <td className="font-medium tabular-nums">{currency(charge.value)}</td>
-                <td>{shortDate(charge.due)}</td>
-                <td className="text-xs text-muted-foreground">
+                <td data-label="Descrição">{charge.title}</td>
+                <td data-label="Valor" className="font-medium tabular-nums">
+                  {currency(charge.value)}
+                </td>
+                <td data-label="Vencimento">{shortDate(charge.due)}</td>
+                <td data-label="Pagamento" className="text-xs text-muted-foreground">
                   {charge.method || "Não recebido"}
                   <small className="mt-1 block">{charge.paid ? shortDate(charge.paid) : "—"}</small>
                 </td>
-                <td>
+                <td data-label="Status">
                   <Badge>{chargeStatus(charge)}</Badge>
                 </td>
-                <td>
+                <td data-label="Cobrança">
                   <button onClick={() => setSelected(charge.id)} className="text-xs text-primary">
-                    {charge.automatic && data.automations[2] ? "WhatsApp ativo" : "Configurar"}
+                    {charge.automatic && data.automations[2]
+                      ? "Regra de cobrança ativa"
+                      : "Configurar"}
                   </button>
                 </td>
-                <td>
+                <td data-row-actions>
                   <div className="flex items-center gap-1">
                     {!charge.paid && (
                       <IconButton
